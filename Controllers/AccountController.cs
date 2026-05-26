@@ -1,15 +1,18 @@
 using Microsoft.AspNetCore.Mvc;
 using EventManageApp.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace EventManageApp.Controllers;
 
 public class AccountController : Controller
 {
     private readonly ILogger<AccountController> _logger;
+    private readonly EventManageApp.Data.ApplicationDbContext _db;
 
-    public AccountController(ILogger<AccountController> logger)
+    public AccountController(ILogger<AccountController> logger, EventManageApp.Data.ApplicationDbContext db)
     {
         _logger = logger;
+        _db = db;
     }
 
     public IActionResult Login()
@@ -18,25 +21,31 @@ public class AccountController : Controller
     }
 
     [HttpPost]
-    public IActionResult Login(LoginViewModel model)
+    public async Task<IActionResult> Login(LoginViewModel model)
     {
         if (ModelState.IsValid)
         {
             _logger.LogInformation("Login attempt for user: {Login}", model.Login);
 
-            // Store username in session
-            HttpContext.Session.SetString("Username", model.Login);
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Login == model.Login && u.Password == model.Password);
 
-            // simple placeholder: treat anyone with login "admin" as administrator
-            if (string.Equals(model.Login, "admin", StringComparison.OrdinalIgnoreCase))
+            if (user != null)
             {
-                HttpContext.Session.SetString("IsAdmin", "true");
-                return RedirectToAction("Index", "Admin");
+                // Store username in session
+                HttpContext.Session.SetString("Username", user.Login);
+
+                if (string.Equals(user.Login, "admin", StringComparison.OrdinalIgnoreCase))
+                {
+                    HttpContext.Session.SetString("IsAdmin", "true");
+                    return RedirectToAction("Index", "Admin");
+                }
+
+                // regular users go to tasks
+                HttpContext.Session.SetString("IsAdmin", "false");
+                return RedirectToAction("Index", "User");
             }
 
-            // regular users go to tasks
-            HttpContext.Session.SetString("IsAdmin", "false");
-            return RedirectToAction("Index", "User");
+            ModelState.AddModelError("", "Invalid login or password");
         }
 
         return View(model);
