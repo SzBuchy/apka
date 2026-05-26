@@ -21,13 +21,13 @@
     <div class="mb-4">
         <ul class="nav nav-tabs" role="tablist">
             <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">
-                    All <span class="badge bg-secondary">@Model.Count</span>
+                <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab">
+                    Pending <span class="badge bg-warning">@Model.Where(s => !s.IsApproved && !s.IsRejected).Count()</span>
                 </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab">
-                    Pending <span class="badge bg-warning">@Model.Where(s => !s.IsApproved && !s.IsRejected).Count()</span>
+                <button class="nav-link" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">
+                    All <span class="badge bg-secondary">@Model.Count</span>
                 </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -45,8 +45,57 @@
 
     <!-- Tab Content -->
     <div class="tab-content">
+        <!-- Pending Submissions -->
+        <div class="tab-pane fade show active" id="pending" role="tabpanel">
+            @{
+                var pending = Model?.Where(s => !s.IsApproved && !s.IsRejected).ToList() ?? new List<EventManageApp.Models.TaskSubmission>();
+            }
+            @if (pending.Count > 0)
+            {
+                <div class="card shadow-sm">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>User</th>
+                                    <th>Task</th>
+                                    <th>Submitted</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var submission in pending)
+                                {
+                                    <tr>
+                                        <td><code>#@submission.Id</code></td>
+                                        <td>@(submission?.User?.Login ?? "Unknown")</td>
+                                        <td>@(submission?.Task?.Name ?? $"Task {submission.TaskId}")</td>
+                                        <td>
+                                            <small class="text-muted">@submission.SubmittedAt.ToString("MMM dd, yyyy HH:mm")</small>
+                                        </td>
+                                        <td class="text-center">
+                                            <a href="@Url.Action("ReviewSubmission", "Admin", new { id = submission.Id })" class="btn btn-sm btn-primary">
+                                                <i class="bi bi-eye"></i> Review
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-success text-center">
+                    <p>No pending submissions - great work!</p>
+                </div>
+            }
+        </div>
+
         <!-- All Submissions -->
-        <div class="tab-pane fade show active" id="all" role="tabpanel">
+        <div class="tab-pane fade" id="all" role="tabpanel">
             @if (Model != null && Model.Count > 0)
             {
                 <div class="card shadow-sm">
@@ -102,55 +151,6 @@
             {
                 <div class="alert alert-info text-center">
                     <p>No submissions found</p>
-                </div>
-            }
-        </div>
-
-        <!-- Pending Submissions -->
-        <div class="tab-pane fade" id="pending" role="tabpanel">
-            @{
-                var pending = Model?.Where(s => !s.IsApproved && !s.IsRejected).ToList() ?? new List<EventManageApp.Models.TaskSubmission>();
-            }
-            @if (pending.Count > 0)
-            {
-                <div class="card shadow-sm">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>ID</th>
-                                    <th>User</th>
-                                    <th>Task</th>
-                                    <th>Submitted</th>
-                                    <th class="text-center">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var submission in pending)
-                                {
-                                    <tr>
-                                        <td><code>#@submission.Id</code></td>
-                                        <td>@(submission?.User?.Login ?? "Unknown")</td>
-                                        <td>Task @submission.TaskId</td>
-                                        <td>
-                                            <small class="text-muted">@submission.SubmittedAt.ToString("MMM dd, yyyy HH:mm")</small>
-                                        </td>
-                                        <td class="text-center">
-                                            <a href="@Url.Action("ReviewSubmission", "Admin", new { id = submission.Id })" class="btn btn-sm btn-primary">
-                                                <i class="bi bi-eye"></i> Review
-                                            </a>
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            }
-            else
-            {
-                <div class="alert alert-success text-center">
-                    <p>No pending submissions - great work!</p>
                 </div>
             }
         </div>

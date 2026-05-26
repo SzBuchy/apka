@@ -163,12 +163,46 @@ public class AdminController : Controller
         if (submission != null)
         {
             submission.IsRejected = true;
+            submission.IsApproved = false; // Ensure it's not approved if rejected
             submission.RejectionReason = rejectionReason;
             _db.TaskSubmissions.Update(submission);
             await _db.SaveChangesAsync();
             _logger.LogInformation("Submission {SubmissionId} rejected: {Reason}", id, rejectionReason);
         }
         return RedirectToAction("Submissions");
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> ChangeDecision(int id)
+    {
+        if (!IsAdmin()) return Forbid();
+        var submission = await _db.TaskSubmissions
+            .Include(s => s.Task)
+            .Include(s => s.User)
+            .FirstOrDefaultAsync(s => s.Id == id);
+            
+        if (submission == null) return NotFound();
+
+        // If it was approved, withdraw points
+        if (submission.IsApproved && submission.User != null && submission.Task != null)
+        {
+            submission.User.Points -= (int)submission.Task.Points;
+            _db.Users.Update(submission.User);
+        }
+
+        // Reset status to pending
+        submission.IsApproved = false;
+        submission.IsRejected = false;
+        submission.RejectionReason = null;
+        submission.ApprovedAt = null;
+        submission.ApprovedBy = null;
+        submission.ApprovalNotes = null;
+
+        _db.TaskSubmissions.Update(submission);
+        await _db.SaveChangesAsync();
+
+        _logger.LogInformation("Decision for submission {SubmissionId} changed. Status reset to Pending.", id);
+        return RedirectToAction("ReviewSubmission", new { id = id });
     }
 
     public async Task<IActionResult> Leaderboard()
@@ -179,6 +213,24 @@ public class AdminController : Controller
             .ToListAsync();
         
         return View(users);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> UpdateUserPoints(int userId, int newPoints)
+    {
+        if (!IsAdmin()) return Forbid();
+        
+        var user = await _db.Users.FindAsync(userId);
+        if (user == null) return NotFound();
+
+        _logger.LogInformation("Admin manually changed points for user {Username} from {OldPoints} to {NewPoints}", 
+            user.Login, user.Points, newPoints);
+
+        user.Points = newPoints;
+        _db.Users.Update(user);
+        await _db.SaveChangesAsync();
+
+        return RedirectToAction("Leaderboard");
     }
 
     [HttpGet]

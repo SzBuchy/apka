@@ -133,7 +133,7 @@
             }
 
             <!-- Approval/Rejection Form -->
-            @if (!(Model?.IsApproved ?? false))
+            @if (!(Model?.IsApproved ?? false) && !(Model?.IsRejected ?? false))
             {
                 <div class="card shadow-sm border-primary mb-4">
                     <div class="card-header bg-primary text-white">
@@ -142,8 +142,6 @@
                     <div class="card-body">
                         <form method="post" id="approvalForm">
                             <input type="hidden" name="id" value="@Model?.Id" />
-
-                            <!-- Quality rating removed -->
 
                             <div class="mb-3">
                                 <label for="approvalNotes" class="form-label">Approval Notes (for approved submissions)</label>
@@ -167,20 +165,55 @@
                     </div>
                 </div>
             }
-            else
+            else if (Model?.IsApproved == true)
             {
-                <div class="alert alert-success" role="alert">
-                    <h5 class="alert-heading">
-                        <i class="bi bi-check-circle"></i> Submission Approved
-                    </h5>
-                    <p>This submission has been approved.</p>
-                    <hr>
-                    <p><strong>Approved By:</strong> @Model?.ApprovedBy</p>
-                    <p><strong>Approved At:</strong> @Model?.ApprovedAt?.ToString("dddd, MMMM dd, yyyy 'at' HH:mm:ss")</p>
-                    @if (!string.IsNullOrEmpty(Model?.ApprovalNotes))
-                    {
-                        <p><strong>Notes:</strong> @Model?.ApprovalNotes</p>
-                    }
+                <div class="alert alert-success d-flex justify-content-between align-items-center" role="alert">
+                    <div>
+                        <h5 class="alert-heading mb-1">
+                            <i class="bi bi-check-circle"></i> Submission Approved
+                        </h5>
+                        <p class="mb-0">This submission has been approved. Points have been awarded to the user.</p>
+                    </div>
+                    <form method="post" asp-action="ChangeDecision">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn btn-outline-success btn-sm">
+                            <i class="bi bi-arrow-counterclockwise"></i> Change Decision
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <p><strong>Approved By:</strong> @Model?.ApprovedBy</p>
+                        <p><strong>Approved At:</strong> @Model?.ApprovedAt?.ToString("dddd, MMMM dd, yyyy 'at' HH:mm:ss")</p>
+                        @if (!string.IsNullOrEmpty(Model?.ApprovalNotes))
+                        {
+                            <p class="mb-0"><strong>Notes:</strong> @Model?.ApprovalNotes</p>
+                        }
+                    </div>
+                </div>
+            }
+            else if (Model?.IsRejected == true)
+            {
+                <div class="alert alert-danger d-flex justify-content-between align-items-center" role="alert">
+                    <div>
+                        <h5 class="alert-heading mb-1">
+                            <i class="bi bi-x-circle"></i> Submission Rejected
+                        </h5>
+                        <p class="mb-0">This submission has been rejected. No points were awarded.</p>
+                    </div>
+                    <form method="post" asp-action="ChangeDecision">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-arrow-counterclockwise"></i> Change Decision
+                        </button>
+                    </form>
+                </div>
+
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <p class="mb-0"><strong>Rejection Reason:</strong> @Model?.RejectionReason</p>
+                    </div>
                 </div>
             }
         </div>
