@@ -45,4 +45,21 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function () {
+            @if (TempData["LoginFailed"] != null && (bool)TempData["LoginFailed"])
+            {
+                <text>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Login Failed',
+                    text: 'The password you entered is incorrect. Please try again.',
+                    confirmButtonText: 'Try Again',
+                    confirmButtonColor: '#0d6efd'
+                });
+                </text>
+            }
+        });
+    </script>
 }

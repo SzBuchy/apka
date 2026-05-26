@@ -45,7 +45,7 @@ public class AccountController : Controller
                 return RedirectToAction("Index", "User");
             }
 
-            ModelState.AddModelError("", "Invalid login or password");
+            TempData["LoginFailed"] = true;
         }
 
         return View(model);
