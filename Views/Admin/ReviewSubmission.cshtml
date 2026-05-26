@@ -1,0 +1,214 @@
+@model EventManageApp.Models.TaskSubmission
+
+@{
+    ViewData["Title"] = "Review Submission";
+    var task = ViewBag.Task as EventManageApp.Models.Task;
+    var user = ViewBag.User as EventManageApp.Models.User;
+}
+
+<div class="container mt-5">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <a href="@Url.Action("Submissions", "Admin")" class="btn btn-secondary mb-3">← Back to Submissions</a>
+            <h1>Review Submission</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Submission Details -->
+        <div class="col-md-8">
+            <!-- User & Task Info -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Submission Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Task:</strong> @task?.Name</p>
+                            <p><strong>Task ID:</strong> <code>#@task?.Id</code></p>
+                            <p><strong>Points Available:</strong> <span class="badge bg-success">@task?.Points pts</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>User:</strong> @user?.Login</p>
+                            <p><strong>User ID:</strong> <code>#@user?.Id</code></p>
+                            <p><strong>User Points:</strong> <span class="badge bg-info">@user?.Points</span></p>
+                        </div>
+                    </div>
+                    <hr />
+                    <p><strong>Submitted:</strong> @Model?.SubmittedAt.ToString("dddd, MMMM dd, yyyy 'at' HH:mm:ss")</p>
+                    <p><strong>Status:</strong>
+                        @if (Model?.IsApproved ?? false)
+                        {
+                            <span class="badge bg-success">Approved</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning">Pending Review</span>
+                        }
+                    </p>
+                </div>
+            </div>
+
+            <!-- Task Description -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Task Description</h5>
+                </div>
+                <div class="card-body">
+                    <p>@task?.Description</p>
+                </div>
+            </div>
+
+            <!-- User's Answer -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">User's Submission</h5>
+                </div>
+                <div class="card-body">
+                    <div class="submission-answer" style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; white-space: pre-wrap; font-family: monospace; max-height: 400px; overflow-y: auto;">
+                        @Model?.Answer
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submitted Photo/File -->
+            @if (!string.IsNullOrEmpty(Model?.CloudinaryUrl) || (Model?.SubmissionFile != null && Model.SubmissionFile.Length > 0))
+            {
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Submitted Photo/Image</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        @if (!string.IsNullOrEmpty(Model.CloudinaryUrl))
+                        {
+                            <a href="@Model.CloudinaryUrl" target="_blank">
+                                <img src="@Model.CloudinaryUrl" 
+                                     alt="Submission" 
+                                     class="img-fluid rounded shadow-sm" 
+                                     style="max-width: 100%; max-height: 500px;" />
+                            </a>
+                            <p class="text-muted mt-2 mb-0">
+                                <small>Stored in Cloudinary</small>
+                            </p>
+                        }
+                        else if (Model.SubmissionFile != null && Model.SubmissionFile.Length > 0)
+                        {
+                            @if (Model.FileContentType?.StartsWith("image/") == true)
+                            {
+                                <img src="@Url.Action("SubmissionFile", "Admin", new { id = Model.Id })" 
+                                     alt="Submission" 
+                                     class="img-fluid rounded shadow-sm" 
+                                     style="max-width: 100%; max-height: 500px;" />
+                                <p class="text-muted mt-2 mb-0">
+                                    <small><strong>File:</strong> @Model.FileName (Stored in Database)</small>
+                                </p>
+                            }
+                            else
+                            {
+                                <p>
+                                    <i class="bi bi-file-earmark"></i> 
+                                    <a href="@Url.Action("SubmissionFile", "Admin", new { id = Model.Id })" 
+                                       download="@Model.FileName">
+                                        @Model.FileName
+                                    </a>
+                                </p>
+                            }
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Additional Notes -->
+            @if (!string.IsNullOrEmpty(Model?.ApprovalNotes))
+            {
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Additional Notes</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>@Model?.ApprovalNotes</p>
+                    </div>
+                </div>
+            }
+
+            <!-- Approval/Rejection Form -->
+            @if (!(Model?.IsApproved ?? false))
+            {
+                <div class="card shadow-sm border-primary mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Review Decision</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" id="approvalForm">
+                            <input type="hidden" name="id" value="@Model?.Id" />
+
+                            <!-- Quality rating removed -->
+
+                            <div class="mb-3">
+                                <label for="approvalNotes" class="form-label">Approval Notes (for approved submissions)</label>
+                                <textarea class="form-control" id="approvalNotes" name="approvalNotes" rows="3" placeholder="Provide feedback to the user..."></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="rejectionReason" class="form-label">Rejection Reason (for rejected submissions)</label>
+                                <textarea class="form-control" id="rejectionReason" name="rejectionReason" rows="3" placeholder="Explain why this submission is being rejected..."></textarea>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="submit" formaction="@Url.Action("RejectSubmission", "Admin")" formmethod="post" class="btn btn-danger" onclick="return confirm('Are you sure you want to reject this submission?');">
+                                    <i class="bi bi-x-circle"></i> Reject
+                                </button>
+                                <button type="submit" formaction="@Url.Action("ApproveSubmission", "Admin")" formmethod="post" class="btn btn-success btn-lg">
+                                    <i class="bi bi-check-circle"></i> Approve & Award Points
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-success" role="alert">
+                    <h5 class="alert-heading">
+                        <i class="bi bi-check-circle"></i> Submission Approved
+                    </h5>
+                    <p>This submission has been approved.</p>
+                    <hr>
+                    <p><strong>Approved By:</strong> @Model?.ApprovedBy</p>
+                    <p><strong>Approved At:</strong> @Model?.ApprovedAt?.ToString("dddd, MMMM dd, yyyy 'at' HH:mm:ss")</p>
+                    @if (!string.IsNullOrEmpty(Model?.ApprovalNotes))
+                    {
+                        <p><strong>Notes:</strong> @Model?.ApprovalNotes</p>
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-md-4">
+            <!-- Quick Stats -->
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Quick Stats</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">
+                        <strong>Submission ID:</strong><br>
+                        <code>#@Model?.Id</code>
+                    </p>
+                    <p class="mb-2">
+                        <strong>Answer Length:</strong><br>
+                        <span class="badge bg-info">@Model?.Answer?.Length characters</span>
+                    </p>
+                    <p>
+                        <strong>Days Pending:</strong><br>
+                        <span class="badge bg-warning">@((DateTime.Now - (Model?.SubmittedAt ?? DateTime.Now)).Days) days</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Review checklist removed -->
+        </div>
+    </div>
+</div>

@@ -1,0 +1,20 @@
+# .NET Core
+bin/
+obj/
+*.user
+*.userosscache
+*.sln.docstates
+
+# Secrets and Config
+appsettings.json
+appsettings.Development.json
+secrets.json
+
+# User-specific files
+.idea/
+.vscode/
+.DS_Store
+
+# DB
+*.db
+*.db-journal
