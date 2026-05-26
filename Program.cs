@@ -53,24 +53,24 @@ using (var scope = app.Services.CreateScope())
         var db = scope.ServiceProvider.GetRequiredService<EventManageApp.Data.ApplicationDbContext>();
         db.Database.Migrate();
         
-    // Only seed if Users table is empty
-    if (!db.Users.Any())
+    // Only seed if Users/Accounts table is empty
+    if (!db.Accounts.Any())
     {
-        var admin = new EventManageApp.Models.User { Login = "admin", Password = "123", Points = 0, IsActive = true };
+        var admin = new EventManageApp.Models.User { Login = "admin", Password = "123", Role = "Admin", Points = 0, IsActive = true };
         db.Users.Add(admin);
         
         var testUsers = new List<EventManageApp.Models.User>
         {
-            new() { Login = "alice", Password = "pass", Points = 950 },
-            new() { Login = "bob", Password = "pass", Points = 850 },
-            new() { Login = "charlie", Password = "pass", Points = 720 },
-            new() { Login = "diana", Password = "pass", Points = 680 },
-            new() { Login = "evan", Password = "pass", Points = 610 },
-            new() { Login = "frank", Password = "pass", Points = 550 },
-            new() { Login = "grace", Password = "pass", Points = 480 },
-            new() { Login = "henry", Password = "pass", Points = 420 },
-            new() { Login = "iris", Password = "pass", Points = 350 },
-            new() { Login = "jack", Password = "pass", Points = 280 }
+            new() { Login = "alice", Password = "pass", Role = "User", Points = 950 },
+            new() { Login = "bob", Password = "pass", Role = "User", Points = 850 },
+            new() { Login = "charlie", Password = "pass", Role = "User", Points = 720 },
+            new() { Login = "diana", Password = "pass", Role = "User", Points = 680 },
+            new() { Login = "evan", Password = "pass", Role = "User", Points = 610 },
+            new() { Login = "frank", Password = "pass", Role = "User", Points = 550 },
+            new() { Login = "grace", Password = "pass", Role = "User", Points = 480 },
+            new() { Login = "henry", Password = "pass", Role = "User", Points = 420 },
+            new() { Login = "iris", Password = "pass", Role = "User", Points = 350 },
+            new() { Login = "jack", Password = "pass", Role = "User", Points = 280 }
         };
         
         db.Users.AddRange(testUsers);
@@ -82,13 +82,15 @@ using (var scope = app.Services.CreateScope())
         var admin = db.Users.FirstOrDefault(u => u.Login == "admin");
         if (admin == null)
         {
-            db.Users.Add(new EventManageApp.Models.User { Login = "admin", Password = "123", Points = 0 });
+            db.Users.Add(new EventManageApp.Models.User { Login = "admin", Password = "123", Role = "Admin", Points = 0 });
             db.SaveChanges();
         }
-        else if (admin.Password != "123")
+        else 
         {
-            admin.Password = "123";
-            db.SaveChanges();
+            bool changed = false;
+            if (admin.Password != "123") { admin.Password = "123"; changed = true; }
+            if (admin.Role != "Admin") { admin.Role = "Admin"; changed = true; }
+            if (changed) db.SaveChanges();
         }
     }
     }

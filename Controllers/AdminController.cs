@@ -17,8 +17,7 @@ public class AdminController : Controller
 
     private bool IsAdmin()
     {
-        var isAdmin = HttpContext.Session.GetString("IsAdmin");
-        return isAdmin == "true";
+        return HttpContext.Session.GetString("IsAdmin") == "true";
     }
 
     public IActionResult Index()
@@ -175,6 +174,7 @@ public class AdminController : Controller
     public async Task<IActionResult> Leaderboard()
     {
         var users = await _db.Users
+            .Where(u => u.Role != "Admin")
             .OrderByDescending(u => u.Points)
             .ToListAsync();
         

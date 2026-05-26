@@ -34,7 +34,7 @@ public class AccountController : Controller
                 // Store username in session
                 HttpContext.Session.SetString("Username", user.Login);
 
-                if (string.Equals(user.Login, "admin", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(user.Role, "Admin", StringComparison.OrdinalIgnoreCase))
                 {
                     HttpContext.Session.SetString("IsAdmin", "true");
                     return RedirectToAction("Index", "Admin");
