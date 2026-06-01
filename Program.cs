@@ -92,6 +92,19 @@ using (var scope = app.Services.CreateScope())
             if (admin.Role != "Admin") { admin.Role = "Admin"; changed = true; }
             if (changed) db.SaveChanges();
         }
+
+        // Ensure scaner account exists
+        var scaner = db.Accounts.FirstOrDefault(a => a.Login == "scaner");
+        if (scaner == null)
+        {
+            db.Accounts.Add(new EventManageApp.Models.Scaner { Login = "scaner", Password = "123", Role = "Scaner" });
+            db.SaveChanges();
+        }
+        else if (scaner.Role != "Scaner")
+        {
+            scaner.Role = "Scaner";
+            db.SaveChanges();
+        }
     }
     }
     catch (Exception ex)

@@ -3,6 +3,7 @@
 @{
     ViewData["Title"] = "Results Board";
     var users = Model ?? new List<EventManageApp.Models.User>();
+    var isAdmin = Context.Session.GetString("IsAdmin") == "true";
 }
 
 <div class="container mt-5">
@@ -25,7 +26,10 @@
                             <th style="width: 80px;">Rank</th>
                             <th>Username</th>
                             <th class="text-end">Current Points</th>
-                            <th class="text-center" style="width: 250px;">Manual Adjustment</th>
+                            @if (isAdmin)
+                            {
+                                <th class="text-center" style="width: 250px;">Manual Adjustment</th>
+                            }
                         </tr>
                     </thead>
                     <tbody>
@@ -60,15 +64,18 @@
                                 <td class="text-end">
                                     <span class="badge bg-success fs-6">@user.Points pts</span>
                                 </td>
-                                <td class="text-center">
-                                    <form asp-action="UpdateUserPoints" method="post" class="d-flex justify-content-center align-items-center gap-2">
-                                        <input type="hidden" name="userId" value="@user.Id" />
-                                        <input type="number" name="newPoints" value="@user.Points" class="form-control form-control-sm" style="width: 100px;" required />
-                                        <button type="submit" class="btn btn-sm btn-outline-primary">
-                                            <i class="bi bi-save"></i> Save
-                                        </button>
-                                    </form>
-                                </td>
+                                @if (isAdmin)
+                                {
+                                    <td class="text-center">
+                                        <form asp-action="UpdateUserPoints" method="post" class="d-flex justify-content-center align-items-center gap-2">
+                                            <input type="hidden" name="userId" value="@user.Id" />
+                                            <input type="number" name="newPoints" value="@user.Points" class="form-control form-control-sm" style="width: 100px;" required />
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-save"></i> Save
+                                            </button>
+                                        </form>
+                                    </td>
+                                }
                             </tr>
                         }
                     </tbody>

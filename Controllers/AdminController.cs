@@ -233,6 +233,52 @@ public class AdminController : Controller
         return RedirectToAction("Leaderboard");
     }
 
+    public async Task<IActionResult> Coupons()
+    {
+        if (!IsAdmin()) return Forbid();
+        var coupons = await _db.Coupons.Include(c => c.User).OrderByDescending(c => c.Id).ToListAsync();
+        var users = await _db.Users.Where(u => u.Role != "Admin").ToListAsync();
+        ViewBag.Users = users;
+        return View(coupons);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateCoupon(string title, int userId, DateTime startDate, DateTime endDate)
+    {
+        if (!IsAdmin()) return Forbid();
+        
+        // Generate a random unique serial number
+        var serial = "CPN-" + Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper();
+        
+        var coupon = new Coupon
+        {
+            Title = title,
+            UserId = userId,
+            StartDate = startDate,
+            EndDate = endDate,
+            SerialNumber = serial,
+            IsUsed = false
+        };
+
+        _db.Coupons.Add(coupon);
+        await _db.SaveChangesAsync();
+
+        return RedirectToAction("Coupons");
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> DeleteCoupon(int id)
+    {
+        if (!IsAdmin()) return Forbid();
+        var coupon = await _db.Coupons.FindAsync(id);
+        if (coupon != null)
+        {
+            _db.Coupons.Remove(coupon);
+            await _db.SaveChangesAsync();
+        }
+        return RedirectToAction("Coupons");
+    }
+
     [HttpGet]
     public async Task<IActionResult> SubmissionFile(int id)
     {

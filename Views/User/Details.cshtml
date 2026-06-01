@@ -86,14 +86,14 @@
                             <input type="hidden" name="taskId" value="@Model?.Id" />
 
                             <div class="mb-3">
-                                <label for="answer" class="form-label">Your Answer</label>
+                                <label for="answer" class="form-label">Your Answer @(Model?.RequiresPhoto == true ? "(Optional)" : "")</label>
                                 <textarea 
                                     class="form-control" 
                                     id="answer" 
                                     name="answer" 
                                     rows="6" 
                                     placeholder="Enter your answer, solution, or work here..."
-                                    required></textarea>
+                                    @(Model?.RequiresPhoto == true ? "" : "required")></textarea>
                                 <small class="text-muted d-block mt-2">
                                     You can include code snippets, explanations, or any relevant information to complete this task.
                                 </small>
@@ -103,17 +103,17 @@
                             {
                                 <div class="mb-3">
                                     <label for="submissionFile" class="form-label">
-                                        <span class="badge bg-warning text-dark me-2">Required</span>Photo/Image
+                                        <span class="badge bg-warning text-dark me-2">Required</span>Photo/Video
                                     </label>
                                     <input 
                                         type="file" 
                                         class="form-control" 
                                         id="submissionFile" 
                                         name="submissionFile" 
-                                        accept="image/*"
+                                        accept="image/*,video/*"
                                         required />
                                     <small class="text-muted d-block mt-2">
-                                        Upload a photo or image to support your submission (JPG, PNG, etc.)
+                                        Upload a photo or video to support your submission (JPG, PNG, MP4, etc.)
                                     </small>
                                 </div>
                             }
@@ -154,16 +154,26 @@
                     @if (!string.IsNullOrEmpty(submission?.CloudinaryUrl) || (submission?.SubmissionFile != null && submission.SubmissionFile.Length > 0))
                     {
                         <div class="mt-3">
-                            <strong>Submitted Photo:</strong>
+                            <strong>Submitted Photo/Video:</strong>
                             @if (!string.IsNullOrEmpty(submission.CloudinaryUrl))
                             {
                                 <div class="mt-2">
-                                    <a href="@submission.CloudinaryUrl" target="_blank">
-                                        <img src="@submission.CloudinaryUrl" 
-                                             alt="Submission" 
-                                             class="img-fluid rounded shadow-sm" 
-                                             style="max-width: 100%; max-height: 300px;" />
-                                    </a>
+                                    @if (submission.FileContentType?.StartsWith("video/") == true || submission.CloudinaryUrl.EndsWith(".mp4") || submission.CloudinaryUrl.EndsWith(".mov"))
+                                    {
+                                        <video controls class="img-fluid rounded shadow-sm" style="max-width: 100%; max-height: 400px;">
+                                            <source src="@submission.CloudinaryUrl" type="@submission.FileContentType">
+                                            Your browser does not support the video tag.
+                                        </video>
+                                    }
+                                    else
+                                    {
+                                        <a href="@submission.CloudinaryUrl" target="_blank">
+                                            <img src="@submission.CloudinaryUrl" 
+                                                 alt="Submission" 
+                                                 class="img-fluid rounded shadow-sm" 
+                                                 style="max-width: 100%; max-height: 300px;" />
+                                        </a>
+                                    }
                                 </div>
                             }
                             else if (submission.SubmissionFile != null && submission.SubmissionFile.Length > 0)
@@ -175,6 +185,15 @@
                                              alt="Submission" 
                                              class="img-fluid rounded" 
                                              style="max-width: 100%; max-height: 300px;" />
+                                    </div>
+                                }
+                                else if (submission.FileContentType?.StartsWith("video/") == true)
+                                {
+                                    <div class="mt-2">
+                                        <video controls class="img-fluid rounded" style="max-width: 100%; max-height: 400px;">
+                                            <source src="@Url.Action("SubmissionFile", "Admin", new { id = submission.Id })" type="@submission.FileContentType">
+                                            Your browser does not support the video tag.
+                                        </video>
                                     </div>
                                 }
                                 else
@@ -198,7 +217,7 @@
                     <li>Submit your answer or solution to this task</li>
                     @if (Model?.RequiresPhoto == true)
                     {
-                        <li>Include a photo/image with your submission</li>
+                        <li>Include a photo or video with your submission</li>
                     }
                     <li>An admin will review your submission</li>
                     <li>Once approved, you'll earn <strong>@Model?.Points points</strong></li>

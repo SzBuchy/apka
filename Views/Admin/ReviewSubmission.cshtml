@@ -72,22 +72,32 @@
                 </div>
             </div>
 
-            <!-- Submitted Photo/File -->
+            <!-- Submitted Photo/Video/File -->
             @if (!string.IsNullOrEmpty(Model?.CloudinaryUrl) || (Model?.SubmissionFile != null && Model.SubmissionFile.Length > 0))
             {
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-light">
-                        <h5 class="mb-0">Submitted Photo/Image</h5>
+                        <h5 class="mb-0">Submitted Photo/Video</h5>
                     </div>
                     <div class="card-body text-center">
                         @if (!string.IsNullOrEmpty(Model.CloudinaryUrl))
                         {
-                            <a href="@Model.CloudinaryUrl" target="_blank">
-                                <img src="@Model.CloudinaryUrl" 
-                                     alt="Submission" 
-                                     class="img-fluid rounded shadow-sm" 
-                                     style="max-width: 100%; max-height: 500px;" />
-                            </a>
+                            @if (Model.FileContentType?.StartsWith("video/") == true || Model.CloudinaryUrl.EndsWith(".mp4") || Model.CloudinaryUrl.EndsWith(".mov"))
+                            {
+                                <video controls class="img-fluid rounded shadow-sm" style="max-width: 100%; max-height: 500px;">
+                                    <source src="@Model.CloudinaryUrl" type="@Model.FileContentType">
+                                    Your browser does not support the video tag.
+                                </video>
+                            }
+                            else
+                            {
+                                <a href="@Model.CloudinaryUrl" target="_blank">
+                                    <img src="@Model.CloudinaryUrl" 
+                                         alt="Submission" 
+                                         class="img-fluid rounded shadow-sm" 
+                                         style="max-width: 100%; max-height: 500px;" />
+                                </a>
+                            }
                             <p class="text-muted mt-2 mb-0">
                                 <small>Stored in Cloudinary</small>
                             </p>
@@ -100,6 +110,16 @@
                                      alt="Submission" 
                                      class="img-fluid rounded shadow-sm" 
                                      style="max-width: 100%; max-height: 500px;" />
+                                <p class="text-muted mt-2 mb-0">
+                                    <small><strong>File:</strong> @Model.FileName (Stored in Database)</small>
+                                </p>
+                            }
+                            else if (Model.FileContentType?.StartsWith("video/") == true)
+                            {
+                                <video controls class="img-fluid rounded shadow-sm" style="max-width: 100%; max-height: 500px;">
+                                    <source src="@Url.Action("SubmissionFile", "Admin", new { id = Model.Id })" type="@Model.FileContentType">
+                                    Your browser does not support the video tag.
+                                </video>
                                 <p class="text-muted mt-2 mb-0">
                                     <small><strong>File:</strong> @Model.FileName (Stored in Database)</small>
                                 </p>

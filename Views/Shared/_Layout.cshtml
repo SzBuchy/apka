@@ -22,6 +22,7 @@
                     @{
                         var username = Context.Session.GetString("Username");
                         var isAdmin = Context.Session.GetString("IsAdmin") == "true";
+                        var isScaner = Context.Session.GetString("IsScaner") == "true";
                     }
                     
                     <ul class="navbar-nav flex-grow-1">
@@ -30,19 +31,31 @@
                             @if (isAdmin)
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="Tasks">Manage Tasks</a>
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="Tasks">Tasks</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="Submissions">Review Submissions</a>
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="Submissions">Submissions</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="Leaderboard">Results Board</a>
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="Leaderboard">Leaderboard</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="Coupons">Coupons</a>
+                                </li>
+                            }
+                            else if (isScaner)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Scaner" asp-action="Index">QR Scaner</a>
                                 </li>
                             }
                             else
                             {
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Index">Tasks</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Coupons">My Coupons</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="Leaderboard">Score Board</a>

@@ -39,9 +39,17 @@ public class AccountController : Controller
                     HttpContext.Session.SetString("IsAdmin", "true");
                     return RedirectToAction("Index", "Admin");
                 }
+                
+                if (string.Equals(user.Role, "Scaner", StringComparison.OrdinalIgnoreCase))
+                {
+                    HttpContext.Session.SetString("IsAdmin", "false");
+                    HttpContext.Session.SetString("IsScaner", "true");
+                    return RedirectToAction("Index", "Scaner");
+                }
 
                 // regular users go to tasks
                 HttpContext.Session.SetString("IsAdmin", "false");
+                HttpContext.Session.SetString("IsScaner", "false");
                 return RedirectToAction("Index", "User");
             }
 

@@ -56,6 +56,47 @@ namespace EventManageApp.Data.Migrations
                     b.UseTphMappingStrategy();
                 });
 
+            modelBuilder.Entity("EventManageApp.Models.Coupon", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ScannedBy")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SerialNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UsedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Coupons");
+                });
+
             modelBuilder.Entity("EventManageApp.Models.Task", b =>
                 {
                     b.Property<int>("Id")
@@ -144,6 +185,13 @@ namespace EventManageApp.Data.Migrations
                     b.ToTable("TaskSubmissions");
                 });
 
+            modelBuilder.Entity("EventManageApp.Models.Scaner", b =>
+                {
+                    b.HasBaseType("EventManageApp.Models.Account");
+
+                    b.HasDiscriminator().HasValue("Scaner");
+                });
+
             modelBuilder.Entity("EventManageApp.Models.User", b =>
                 {
                     b.HasBaseType("EventManageApp.Models.Account");
@@ -158,6 +206,17 @@ namespace EventManageApp.Data.Migrations
                         .HasColumnType("integer");
 
                     b.HasDiscriminator().HasValue("User");
+                });
+
+            modelBuilder.Entity("EventManageApp.Models.Coupon", b =>
+                {
+                    b.HasOne("EventManageApp.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("EventManageApp.Models.TaskSubmission", b =>

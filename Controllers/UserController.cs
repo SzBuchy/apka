@@ -41,8 +41,20 @@ public class UserController : Controller
         return View(task);
     }
 
+    public async Task<IActionResult> Coupons()
+    {
+        var username = HttpContext.Session.GetString("Username");
+        var user = await _db.Users
+            .Include(u => u.Coupons)
+            .FirstOrDefaultAsync(u => u.Login == username);
+            
+        if (user == null) return RedirectToAction("Login", "Account");
+        
+        return View(user.Coupons.OrderByDescending(c => c.StartDate).ToList());
+    }
+
     [HttpPost]
-    public async Task<IActionResult> SubmitAnswer(int taskId, string answer, IFormFile? submissionFile)
+    public async Task<IActionResult> SubmitAnswer(int taskId, string? answer, IFormFile? submissionFile)
     {
         var username = HttpContext.Session.GetString("Username");
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Login == username);
@@ -52,18 +64,19 @@ public class UserController : Controller
             return RedirectToAction("Index");
         }
 
-        if (string.IsNullOrWhiteSpace(answer))
+        var task = await _db.Tasks.FindAsync(taskId);
+        
+        // Check if answer is required (only if file is NOT required)
+        if (string.IsNullOrWhiteSpace(answer) && task?.RequiresPhoto != true)
         {
             ModelState.AddModelError("answer", "Please provide an answer");
             return RedirectToAction("Details", new { id = taskId });
         }
 
-        var task = await _db.Tasks.FindAsync(taskId);
-        
-        // Check if photo is required
+        // Check if file is required
         if (task?.RequiresPhoto == true && submissionFile == null)
         {
-            ModelState.AddModelError("submissionFile", "A photo is required for this task");
+            ModelState.AddModelError("submissionFile", "A photo or video is required for this task");
             return RedirectToAction("Details", new { id = taskId });
         }
 
@@ -74,10 +87,10 @@ public class UserController : Controller
         // Handle file upload if provided
         if (submissionFile != null)
         {
-            const long maxFileSize = 5 * 1024 * 1024; // 5MB
+            const long maxFileSize = 50 * 1024 * 1024; // 50MB for videos
             if (submissionFile.Length > maxFileSize)
             {
-                ModelState.AddModelError("submissionFile", "File size cannot exceed 5MB");
+                ModelState.AddModelError("submissionFile", "File size cannot exceed 50MB");
                 return RedirectToAction("Details", new { id = taskId });
             }
 
@@ -88,14 +101,15 @@ public class UserController : Controller
                     var uploadParams = new ImageUploadParams()
                     {
                         File = new FileDescription(submissionFile.FileName, stream),
-                        Folder = "event_manage_app_submissions"
+                        Folder = "event_manage_app_submissions",
+                        ResourceType = "auto" // Support both images and videos
                     };
                     var uploadResult = await _cloudinary.UploadAsync(uploadParams);
                     
                     if (uploadResult.Error != null)
                     {
                         _logger.LogError("Cloudinary upload error: {Error}", uploadResult.Error.Message);
-                        ModelState.AddModelError("submissionFile", "Failed to upload image to cloud storage");
+                        ModelState.AddModelError("submissionFile", "Failed to upload file to cloud storage");
                         return RedirectToAction("Details", new { id = taskId });
                     }
 
@@ -105,7 +119,7 @@ public class UserController : Controller
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error uploading to Cloudinary");
-                ModelState.AddModelError("submissionFile", "An unexpected error occurred during image upload");
+                ModelState.AddModelError("submissionFile", "An unexpected error occurred during file upload");
                 return RedirectToAction("Details", new { id = taskId });
             }
             
@@ -117,7 +131,7 @@ public class UserController : Controller
         {
             TaskId = taskId,
             UserId = user.Id,
-            Answer = answer,
+            Answer = answer ?? string.Empty,
             CloudinaryUrl = cloudinaryUrl,
             FileName = fileName,
             FileContentType = fileContentType,
