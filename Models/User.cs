@@ -6,6 +6,7 @@ public class User : Account
     public DateTime CreatedAt { get; set; } = DateTime.Now;
     public bool IsActive { get; set; } = true;
 
-    // Navigation property
+    // Navigation properties
     public ICollection<TaskSubmission> TaskSubmissions { get; set; } = new List<TaskSubmission>();
+    public ICollection<Coupon> Coupons { get; set; } = new List<Coupon>();
 }

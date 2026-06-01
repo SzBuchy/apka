@@ -69,8 +69,8 @@
                                 {
                                     <tr>
                                         <td><code>#@submission.Id</code></td>
-                                        <td>@(submission?.User?.Login ?? "Unknown")</td>
-                                        <td>@(submission?.Task?.Name ?? $"Task {submission.TaskId}")</td>
+                                        <td>@(submission.User?.Login ?? "Unknown")</td>
+                                        <td>@(submission.Task?.Name ?? $"Task {submission.TaskId}")</td>
                                         <td>
                                             <small class="text-muted">@submission.SubmittedAt.ToString("MMM dd, yyyy HH:mm")</small>
                                         </td>
@@ -116,8 +116,8 @@
                                 {
                                     <tr>
                                         <td><code>#@submission.Id</code></td>
-                                        <td>@(submission?.User?.Login ?? "Unknown")</td>
-                                        <td>@(submission?.Task?.Name ?? "Unknown")</td>
+                                        <td>@(submission.User?.Login ?? "Unknown")</td>
+                                        <td>@(submission.Task?.Name ?? "Unknown")</td>
                                         <td>
                                             <small class="text-muted">@submission.SubmittedAt.ToString("MMM dd, yyyy HH:mm")</small>
                                         </td>
@@ -180,7 +180,7 @@
                                 {
                                     <tr>
                                         <td><code>#@submission.Id</code></td>
-                                        <td>@(submission?.User?.Login ?? "Unknown")</td>
+                                        <td>@(submission.User?.Login ?? "Unknown")</td>
                                         <td>Task @submission.TaskId</td>
                                         <td>
                                             <small class="text-muted">@submission.SubmittedAt.ToString("MMM dd, yyyy HH:mm")</small>
@@ -231,7 +231,7 @@
                                 {
                                     <tr>
                                         <td><code>#@submission.Id</code></td>
-                                        <td>@(submission?.User?.Login ?? "Unknown")</td>
+                                        <td>@(submission.User?.Login ?? "Unknown")</td>
                                         <td>Task @submission.TaskId</td>
                                         <td>@submission.ApprovedBy</td>
                                         <td>

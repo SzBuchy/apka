@@ -94,6 +94,7 @@
                     <div class="mb-3">
                         <label class="form-label">Assign to User</label>
                         <select name="userId" class="form-select" required>
+                            <option value="-1" class="text-primary fw-bold">--- EVERYONE ---</option>
                             @foreach (var user in users!)
                             {
                                 <option value="@user.Id">@user.Login</option>

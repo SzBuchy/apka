@@ -48,7 +48,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(document).ready(function () {
-            @if (TempData["LoginFailed"] != null && (bool)TempData["LoginFailed"])
+            @if (TempData["LoginFailed"] is true)
             {
                 <text>
                 Swal.fire({

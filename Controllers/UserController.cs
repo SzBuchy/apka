@@ -53,6 +53,16 @@ public class UserController : Controller
         return View(user.Coupons.OrderByDescending(c => c.StartDate).ToList());
     }
 
+    public async Task<IActionResult> Leaderboard()
+    {
+        var users = await _db.Users
+            .Where(u => u.Role != "Admin")
+            .OrderByDescending(u => u.Points)
+            .ToListAsync();
+        
+        return View(users);
+    }
+
     [HttpPost]
     public async Task<IActionResult> SubmitAnswer(int taskId, string? answer, IFormFile? submissionFile)
     {
@@ -98,11 +108,10 @@ public class UserController : Controller
             {
                 using (var stream = submissionFile.OpenReadStream())
                 {
-                    var uploadParams = new ImageUploadParams()
+                    var uploadParams = new RawUploadParams()
                     {
                         File = new FileDescription(submissionFile.FileName, stream),
-                        Folder = "event_manage_app_submissions",
-                        ResourceType = "auto" // Support both images and videos
+                        Folder = "event_manage_app_submissions"
                     };
                     var uploadResult = await _cloudinary.UploadAsync(uploadParams);
                     

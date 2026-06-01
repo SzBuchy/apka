@@ -247,22 +247,47 @@ public class AdminController : Controller
     {
         if (!IsAdmin()) return Forbid();
         
-        // Generate a random unique serial number
-        var serial = "CPN-" + Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper();
-        
-        var coupon = new Coupon
+        if (userId == -1)
         {
-            Title = title,
-            UserId = userId,
-            StartDate = startDate,
-            EndDate = endDate,
-            SerialNumber = serial,
-            IsUsed = false
-        };
+            // Create for everyone
+            var allUsers = await _db.Users.Where(u => u.Role != "Admin").ToListAsync();
+            var coupons = new List<Coupon>();
+            
+            foreach (var user in allUsers)
+            {
+                coupons.Add(new Coupon
+                {
+                    Title = title,
+                    UserId = user.Id,
+                    StartDate = startDate,
+                    EndDate = endDate,
+                    SerialNumber = "CPN-" + Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper(),
+                    IsUsed = false
+                });
+            }
+            
+            _db.Coupons.AddRange(coupons);
+            _logger.LogInformation("Admin created global coupon '{Title}' for {Count} users", title, allUsers.Count);
+        }
+        else
+        {
+            // Create for single user
+            var serial = "CPN-" + Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper();
+            
+            var coupon = new Coupon
+            {
+                Title = title,
+                UserId = userId,
+                StartDate = startDate,
+                EndDate = endDate,
+                SerialNumber = serial,
+                IsUsed = false
+            };
 
-        _db.Coupons.Add(coupon);
+            _db.Coupons.Add(coupon);
+        }
+
         await _db.SaveChangesAsync();
-
         return RedirectToAction("Coupons");
     }
 
