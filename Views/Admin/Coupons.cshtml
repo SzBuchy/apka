@@ -1,0 +1,121 @@
+@model List<EventManageApp.Models.Coupon>
+
+@{
+    ViewData["Title"] = "Manage Coupons";
+    var users = ViewBag.Users as List<EventManageApp.Models.User>;
+}
+
+<div class="container mt-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1><i class="bi bi-ticket-perforated"></i> Manage Coupons</h1>
+            <p class="text-muted">Generate and assign coupons to users</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createCouponModal">
+                <i class="bi bi-plus-circle"></i> Create New Coupon
+            </button>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Serial Number</th>
+                        <th>User</th>
+                        <th>Title</th>
+                        <th>Validity</th>
+                        <th>Status</th>
+                        <th>Scanned By</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var coupon in Model)
+                    {
+                        <tr>
+                            <td><code>@coupon.SerialNumber</code></td>
+                            <td>@coupon.User?.Login</td>
+                            <td>@coupon.Title</td>
+                            <td>
+                                <small>@coupon.StartDate.ToString("MMM dd") - @coupon.EndDate.ToString("MMM dd")</small>
+                            </td>
+                            <td>
+                                @if (coupon.IsUsed)
+                                {
+                                    <span class="badge bg-secondary">USED</span>
+                                }
+                                else if (DateTime.Now > coupon.EndDate)
+                                {
+                                    <span class="badge bg-danger">EXPIRED</span>
+                                }
+                                else if (DateTime.Now < coupon.StartDate)
+                                {
+                                    <span class="badge bg-info">UPCOMING</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">ACTIVE</span>
+                                }
+                            </td>
+                            <td>@(coupon.ScannedBy ?? "—")</td>
+                            <td class="text-center">
+                                <form asp-action="DeleteCoupon" method="post" onsubmit="return confirm('Delete this coupon?');">
+                                    <input type="hidden" name="id" value="@coupon.Id" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Create Coupon Modal -->
+<div class="modal fade" id="createCouponModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Generate New Coupon</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="CreateCoupon" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Coupon Title</label>
+                        <input type="text" name="title" class="form-control" placeholder="e.g., Lunch Ticket" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Assign to User</label>
+                        <select name="userId" class="form-select" required>
+                            @foreach (var user in users!)
+                            {
+                                <option value="@user.Id">@user.Login</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Start Date</label>
+                            <input type="date" name="startDate" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">End Date</label>
+                            <input type="date" name="endDate" class="form-control" value="@DateTime.Now.AddDays(1).ToString("yyyy-MM-dd")" required />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-toggle="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Generate Coupon</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
