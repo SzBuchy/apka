@@ -23,7 +23,10 @@
                 </div>
                 <div class="card-body">
                     <ul class="list-group list-group-flush" id="stats-list">
-                        @foreach (var stat in ViewBag.Stats)
+                        @{
+                            var stats = ViewBag.Stats as List<EventManageApp.Controllers.ScanerController.CouponStat> ?? new List<EventManageApp.Controllers.ScanerController.CouponStat>();
+                        }
+                        @foreach (var stat in stats)
                         {
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 @stat.Title
@@ -31,7 +34,7 @@
                             </li>
                         }
                     </ul>
-                    @if (ViewBag.Stats.Count == 0)
+                    @if (stats.Count == 0)
                     {
                         <p class="text-muted text-center mt-3">No coupons scanned yet today.</p>
                     }
@@ -55,7 +58,7 @@
                     Swal.fire({
                         icon: 'success',
                         title: 'Valid Coupon!',
-                        text: response.title + ' for user ' + response.user,
+                        text: response.title + (response.user ? ' for user ' + response.user : ''),
                         confirmButtonText: 'Next Scan'
                     }).then(() => {
                         location.reload(); // Refresh to update stats

@@ -9,6 +9,12 @@ public class ScanerController : Controller
     private readonly ILogger<ScanerController> _logger;
     private readonly EventManageApp.Data.ApplicationDbContext _db;
 
+    public class CouponStat
+    {
+        public string Title { get; set; } = string.Empty;
+        public int Count { get; set; }
+    }
+
     public ScanerController(ILogger<ScanerController> logger, EventManageApp.Data.ApplicationDbContext db)
     {
         _logger = logger;
@@ -28,7 +34,7 @@ public class ScanerController : Controller
         var stats = await _db.Coupons
             .Where(c => c.IsUsed)
             .GroupBy(c => c.Title)
-            .Select(g => new { Title = g.Key, Count = g.Count() })
+            .Select(g => new CouponStat { Title = g.Key, Count = g.Count() })
             .ToListAsync();
             
         ViewBag.Stats = stats;

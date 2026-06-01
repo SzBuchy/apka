@@ -27,20 +27,21 @@ public class AccountController : Controller
         {
             _logger.LogInformation("Login attempt for user: {Login}", model.Login);
 
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Login == model.Login && u.Password == model.Password);
+            var account = await _db.Accounts.FirstOrDefaultAsync(u => u.Login == model.Login && u.Password == model.Password);
 
-            if (user != null)
+            if (account != null)
             {
                 // Store username in session
-                HttpContext.Session.SetString("Username", user.Login);
+                HttpContext.Session.SetString("Username", account.Login);
 
-                if (string.Equals(user.Role, "Admin", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(account.Role, "Admin", StringComparison.OrdinalIgnoreCase))
                 {
                     HttpContext.Session.SetString("IsAdmin", "true");
+                    HttpContext.Session.SetString("IsScaner", "false");
                     return RedirectToAction("Index", "Admin");
                 }
                 
-                if (string.Equals(user.Role, "Scaner", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(account.Role, "Scaner", StringComparison.OrdinalIgnoreCase))
                 {
                     HttpContext.Session.SetString("IsAdmin", "false");
                     HttpContext.Session.SetString("IsScaner", "true");
