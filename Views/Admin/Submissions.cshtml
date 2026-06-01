@@ -57,7 +57,6 @@
                         <table class="table table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>ID</th>
                                     <th>User</th>
                                     <th>Task</th>
                                     <th>Submitted</th>
@@ -68,7 +67,6 @@
                                 @foreach (var submission in pending)
                                 {
                                     <tr>
-                                        <td><code>#@submission.Id</code></td>
                                         <td>@(submission.User?.Login ?? "Unknown")</td>
                                         <td>@(submission.Task?.Name ?? $"Task {submission.TaskId}")</td>
                                         <td>
@@ -103,7 +101,6 @@
                         <table class="table table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>ID</th>
                                     <th>User</th>
                                     <th>Task</th>
                                     <th>Submitted</th>
@@ -115,7 +112,6 @@
                                 @foreach (var submission in Model)
                                 {
                                     <tr>
-                                        <td><code>#@submission.Id</code></td>
                                         <td>@(submission.User?.Login ?? "Unknown")</td>
                                         <td>@(submission.Task?.Name ?? "Unknown")</td>
                                         <td>
@@ -167,7 +163,6 @@
                         <table class="table table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>ID</th>
                                     <th>User</th>
                                     <th>Task</th>
                                     <th>Submitted</th>
@@ -179,7 +174,6 @@
                                 @foreach (var submission in rejected)
                                 {
                                     <tr>
-                                        <td><code>#@submission.Id</code></td>
                                         <td>@(submission.User?.Login ?? "Unknown")</td>
                                         <td>Task @submission.TaskId</td>
                                         <td>
@@ -218,7 +212,6 @@
                         <table class="table table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>ID</th>
                                     <th>User</th>
                                     <th>Task</th>
                                     <th>Approved By</th>
@@ -230,7 +223,6 @@
                                 @foreach (var submission in approved)
                                 {
                                     <tr>
-                                        <td><code>#@submission.Id</code></td>
                                         <td>@(submission.User?.Login ?? "Unknown")</td>
                                         <td>Task @submission.TaskId</td>
                                         <td>@submission.ApprovedBy</td>
