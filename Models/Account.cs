@@ -7,4 +7,6 @@ abstract public class Account
     public string Password { get; set; } = string.Empty;
     public string Role { get; set; } = "User";
     public string? Nickname { get; set; }
+    public string? FirstName { get; set; }
+    public string? LastName { get; set; }
 }

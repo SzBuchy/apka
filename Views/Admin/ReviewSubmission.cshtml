@@ -30,6 +30,7 @@
                         </div>
                         <div class="col-md-6">
                             <p><strong>Użytkownik:</strong> @(user?.Nickname ?? user?.Login)</p>
+                            <p><strong>Imię i Nazwisko:</strong> @user?.FirstName @user?.LastName</p>
                             <p><strong>Punkty użytkownika:</strong> <span class="badge bg-info text-white">@user?.Points</span></p>
                         </div>
                     </div>

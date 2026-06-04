@@ -35,6 +35,12 @@ namespace EventManageApp.Data.Migrations
                         .HasMaxLength(8)
                         .HasColumnType("character varying(8)");
 
+                    b.Property<string>("FirstName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("LastName")
+                        .HasColumnType("text");
+
                     b.Property<string>("Login")
                         .IsRequired()
                         .HasColumnType("text");

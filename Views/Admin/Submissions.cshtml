@@ -67,7 +67,10 @@
                                 @foreach (var submission in pending)
                                 {
                                     <tr>
-                                        <td>@(submission.User?.Nickname ?? submission.User?.Login ?? "Nieznany")</td>
+                                        <td>
+                                            <div>@(submission.User?.Nickname ?? submission.User?.Login ?? "Nieznany")</div>
+                                            <small class="text-muted">@(submission.User?.FirstName) @(submission.User?.LastName)</small>
+                                        </td>
                                         <td>@(submission.Task?.Name ?? $"Zadanie {submission.TaskId}")</td>
                                         <td>
                                             <small class="text-muted">@submission.SubmittedAt.ToString("dd.MM.yyyy HH:mm")</small>
@@ -112,7 +115,10 @@
                                 @foreach (var submission in Model)
                                 {
                                     <tr>
-                                        <td>@(submission.User?.Nickname ?? submission.User?.Login ?? "Nieznany")</td>
+                                        <td>
+                                            <div>@(submission.User?.Nickname ?? submission.User?.Login ?? "Nieznany")</div>
+                                            <small class="text-muted">@(submission.User?.FirstName) @(submission.User?.LastName)</small>
+                                        </td>
                                         <td>@(submission.Task?.Name ?? "Nieznany")</td>
                                         <td>
                                             <small class="text-muted">@submission.SubmittedAt.ToString("dd.MM.yyyy HH:mm")</small>
@@ -174,7 +180,10 @@
                                 @foreach (var submission in rejected)
                                 {
                                     <tr>
-                                        <td>@(submission.User?.Nickname ?? submission.User?.Login ?? "Nieznany")</td>
+                                        <td>
+                                            <div>@(submission.User?.Nickname ?? submission.User?.Login ?? "Nieznany")</div>
+                                            <small class="text-muted">@(submission.User?.FirstName) @(submission.User?.LastName)</small>
+                                        </td>
                                         <td>@(submission.Task?.Name ?? $"Zadanie {submission.TaskId}")</td>
                                         <td>
                                             <small class="text-muted">@submission.SubmittedAt.ToString("dd.MM.yyyy HH:mm")</small>
@@ -223,7 +232,10 @@
                                 @foreach (var submission in approved)
                                 {
                                     <tr>
-                                        <td>@(submission.User?.Nickname ?? submission.User?.Login ?? "Nieznany")</td>
+                                        <td>
+                                            <div>@(submission.User?.Nickname ?? submission.User?.Login ?? "Nieznany")</div>
+                                            <small class="text-muted">@(submission.User?.FirstName) @(submission.User?.LastName)</small>
+                                        </td>
                                         <td>@(submission.Task?.Name ?? $"Zadanie {submission.TaskId}")</td>
                                         <td>@submission.ApprovedBy</td>
                                         <td>

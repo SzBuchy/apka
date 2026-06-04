@@ -59,7 +59,7 @@ public class AccountController : Controller
                 HttpContext.Session.SetString("IsAdmin", string.Equals(account.Role, "Admin", StringComparison.OrdinalIgnoreCase) ? "true" : "false");
                 HttpContext.Session.SetString("IsScaner", string.Equals(account.Role, "Scaner", StringComparison.OrdinalIgnoreCase) ? "true" : "false");
 
-                if (string.IsNullOrEmpty(account.Nickname))
+                if (string.IsNullOrEmpty(account.Nickname) || string.IsNullOrEmpty(account.FirstName) || string.IsNullOrEmpty(account.LastName))
                 {
                     return RedirectToAction("SetNickname");
                 }
@@ -75,17 +75,6 @@ public class AccountController : Controller
 
     private IActionResult RedirectToUserRole(string? role)
     {
-        var nickname = User.FindFirstValue("Nickname");
-        var login = User.Identity?.Name;
-
-        // If nickname is same as login, it might mean it's not set (depending on how we initialized it)
-        // But our logic specifically sets Nickname in DB to null initially.
-        // The claim is initialized as Nickname ?? Login.
-        
-        // Let's check the database to be sure if we are in a state that requires setting nickname
-        // However, doing a DB check in every redirect might be overkill.
-        // Let's rely on the Login POST logic for the first redirect.
-        
         if (string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase))
             return RedirectToAction("Index", "Admin");
         if (string.Equals(role, "Scaner", StringComparison.OrdinalIgnoreCase))
@@ -102,13 +91,15 @@ public class AccountController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> SetNickname(string nickname)
+    public async Task<IActionResult> SetNickname(string nickname, string firstName, string lastName)
     {
         if (User.Identity?.IsAuthenticated != true) return RedirectToAction("Login");
 
-        if (string.IsNullOrWhiteSpace(nickname))
+        if (string.IsNullOrWhiteSpace(nickname) || string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName))
         {
-            ModelState.AddModelError("nickname", "Pseudonim nie może być pusty");
+            if (string.IsNullOrWhiteSpace(nickname)) ModelState.AddModelError("nickname", "Pseudonim nie może być pusty");
+            if (string.IsNullOrWhiteSpace(firstName)) ModelState.AddModelError("firstName", "Imię nie może być puste");
+            if (string.IsNullOrWhiteSpace(lastName)) ModelState.AddModelError("lastName", "Nazwisko nie może być puste");
             return View();
         }
 
@@ -118,6 +109,8 @@ public class AccountController : Controller
         if (account != null)
         {
             account.Nickname = nickname;
+            account.FirstName = firstName;
+            account.LastName = lastName;
             await _db.SaveChangesAsync();
 
             // Rebuild claims from the account object to be 100% sure
@@ -126,7 +119,8 @@ public class AccountController : Controller
                 new Claim(ClaimTypes.Name, account.Login),
                 new Claim(ClaimTypes.Role, account.Role),
                 new Claim("AccountId", account.Id.ToString()),
-                new Claim("Nickname", account.Nickname)
+                new Claim("Nickname", account.Nickname ?? account.Login),
+                new Claim("FullName", $"{account.FirstName} {account.LastName}")
             };
 
             var claimsIdentity = new ClaimsIdentity(claims, "CookieAuth");
