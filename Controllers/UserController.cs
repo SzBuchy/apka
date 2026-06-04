@@ -22,7 +22,7 @@ public class UserController : Controller
     public async Task<IActionResult> Index()
     {
         // Get current user from session
-        var username = HttpContext.Session.GetString("Username");
+        var username = User.Identity?.Name;
         var user = await _db.Users
             .Include(u => u.TaskSubmissions)
             .FirstOrDefaultAsync(u => u.Login == username);
@@ -43,7 +43,7 @@ public class UserController : Controller
 
     public async Task<IActionResult> Coupons()
     {
-        var username = HttpContext.Session.GetString("Username");
+        var username = User.Identity?.Name;
         var user = await _db.Users
             .Include(u => u.Coupons)
             .FirstOrDefaultAsync(u => u.Login == username);
@@ -66,7 +66,7 @@ public class UserController : Controller
     [HttpPost]
     public async Task<IActionResult> SubmitAnswer(int taskId, string? answer, IFormFile? submissionFile)
     {
-        var username = HttpContext.Session.GetString("Username");
+        var username = User.Identity?.Name;
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Login == username);
         
         if (user == null)
@@ -79,14 +79,14 @@ public class UserController : Controller
         // Check if answer is required (only if file is NOT required)
         if (string.IsNullOrWhiteSpace(answer) && task?.RequiresPhoto != true)
         {
-            ModelState.AddModelError("answer", "Please provide an answer");
+            ModelState.AddModelError("answer", "Proszę podać odpowiedź");
             return RedirectToAction("Details", new { id = taskId });
         }
 
         // Check if file is required
         if (task?.RequiresPhoto == true && submissionFile == null)
         {
-            ModelState.AddModelError("submissionFile", "A photo or video is required for this task");
+            ModelState.AddModelError("submissionFile", "Zdjęcie lub wideo jest wymagane dla tego zadania");
             return RedirectToAction("Details", new { id = taskId });
         }
 
@@ -100,7 +100,7 @@ public class UserController : Controller
             const long maxFileSize = 50 * 1024 * 1024; // 50MB for videos
             if (submissionFile.Length > maxFileSize)
             {
-                ModelState.AddModelError("submissionFile", "File size cannot exceed 50MB");
+                ModelState.AddModelError("submissionFile", "Rozmiar pliku nie może przekraczać 50MB");
                 return RedirectToAction("Details", new { id = taskId });
             }
 
@@ -118,7 +118,7 @@ public class UserController : Controller
                     if (uploadResult.Error != null)
                     {
                         _logger.LogError("Cloudinary upload error: {Error}", uploadResult.Error.Message);
-                        ModelState.AddModelError("submissionFile", "Failed to upload file to cloud storage");
+                        ModelState.AddModelError("submissionFile", "Nie udało się przesłać pliku do chmury");
                         return RedirectToAction("Details", new { id = taskId });
                     }
 
@@ -128,7 +128,7 @@ public class UserController : Controller
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error uploading to Cloudinary");
-                ModelState.AddModelError("submissionFile", "An unexpected error occurred during file upload");
+                ModelState.AddModelError("submissionFile", "Wystąpił nieoczekiwany błąd podczas przesyłania pliku");
                 return RedirectToAction("Details", new { id = taskId });
             }
             

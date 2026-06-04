@@ -1,19 +1,19 @@
 @model List<EventManageApp.Models.TaskSubmission>
 
 @{
-    ViewData["Title"] = "Review Submissions";
+    ViewData["Title"] = "Weryfikacja Zgłoszeń";
 }
 
 <div class="container mt-5">
     <div class="row mb-4">
         <div class="col-md-8">
             <h1 class="mb-0">
-                <i class="bi bi-clipboard-check"></i> Review Submissions
+                <i class="bi bi-clipboard-check"></i> Weryfikacja Zgłoszeń
             </h1>
-            <p class="text-muted">Review and approve user task submissions</p>
+            <p class="text-muted">Przeglądaj i zatwierdzaj zgłoszenia zadań od użytkowników</p>
         </div>
         <div class="col-md-4 text-end">
-            <span class="badge bg-warning fs-6">@Model.Where(s => !s.IsApproved && !s.IsRejected).Count() Pending</span>
+            <span class="badge bg-warning fs-6 text-dark">@Model.Where(s => !s.IsApproved && !s.IsRejected).Count() Oczekujących</span>
         </div>
     </div>
 
@@ -22,22 +22,22 @@
         <ul class="nav nav-tabs" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab">
-                    Pending <span class="badge bg-warning">@Model.Where(s => !s.IsApproved && !s.IsRejected).Count()</span>
+                    Oczekujące <span class="badge bg-warning text-dark">@Model.Where(s => !s.IsApproved && !s.IsRejected).Count()</span>
                 </button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">
-                    All <span class="badge bg-secondary">@Model.Count</span>
+                    Wszystkie <span class="badge bg-secondary">@Model.Count</span>
                 </button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="rejected-tab" data-bs-toggle="tab" data-bs-target="#rejected" type="button" role="tab">
-                    Rejected <span class="badge bg-danger">@Model.Where(s => s.IsRejected).Count()</span>
+                    Odrzucone <span class="badge bg-danger">@Model.Where(s => s.IsRejected).Count()</span>
                 </button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="approved-tab" data-bs-toggle="tab" data-bs-target="#approved" type="button" role="tab">
-                    Approved <span class="badge bg-success">@Model.Where(s => s.IsApproved).Count()</span>
+                    Zatwierdzone <span class="badge bg-success">@Model.Where(s => s.IsApproved).Count()</span>
                 </button>
             </li>
         </ul>
@@ -57,24 +57,24 @@
                         <table class="table table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>User</th>
-                                    <th>Task</th>
-                                    <th>Submitted</th>
-                                    <th class="text-center">Actions</th>
+                                    <th>Użytkownik</th>
+                                    <th>Zadanie</th>
+                                    <th>Przesłano</th>
+                                    <th class="text-center">Akcje</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach (var submission in pending)
                                 {
                                     <tr>
-                                        <td>@(submission.User?.Login ?? "Unknown")</td>
-                                        <td>@(submission.Task?.Name ?? $"Task {submission.TaskId}")</td>
+                                        <td>@(submission.User?.Nickname ?? submission.User?.Login ?? "Nieznany")</td>
+                                        <td>@(submission.Task?.Name ?? $"Zadanie {submission.TaskId}")</td>
                                         <td>
-                                            <small class="text-muted">@submission.SubmittedAt.ToString("MMM dd, yyyy HH:mm")</small>
+                                            <small class="text-muted">@submission.SubmittedAt.ToString("dd.MM.yyyy HH:mm")</small>
                                         </td>
                                         <td class="text-center">
                                             <a href="@Url.Action("ReviewSubmission", "Admin", new { id = submission.Id })" class="btn btn-sm btn-primary">
-                                                <i class="bi bi-eye"></i> Review
+                                                <i class="bi bi-eye"></i> Sprawdź
                                             </a>
                                         </td>
                                     </tr>
@@ -87,7 +87,7 @@
             else
             {
                 <div class="alert alert-success text-center">
-                    <p>No pending submissions - great work!</p>
+                    <p>Brak oczekujących zgłoszeń - dobra robota!</p>
                 </div>
             }
         </div>
@@ -101,39 +101,39 @@
                         <table class="table table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>User</th>
-                                    <th>Task</th>
-                                    <th>Submitted</th>
+                                    <th>Użytkownik</th>
+                                    <th>Zadanie</th>
+                                    <th>Przesłano</th>
                                     <th>Status</th>
-                                    <th class="text-center">Actions</th>
+                                    <th class="text-center">Akcje</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach (var submission in Model)
                                 {
                                     <tr>
-                                        <td>@(submission.User?.Login ?? "Unknown")</td>
-                                        <td>@(submission.Task?.Name ?? "Unknown")</td>
+                                        <td>@(submission.User?.Nickname ?? submission.User?.Login ?? "Nieznany")</td>
+                                        <td>@(submission.Task?.Name ?? "Nieznany")</td>
                                         <td>
-                                            <small class="text-muted">@submission.SubmittedAt.ToString("MMM dd, yyyy HH:mm")</small>
+                                            <small class="text-muted">@submission.SubmittedAt.ToString("dd.MM.yyyy HH:mm")</small>
                                         </td>
                                         <td>
                                             @if (submission.IsApproved)
                                             {
-                                                <span class="badge bg-success">Approved</span>
+                                                <span class="badge bg-success">Zatwierdzone</span>
                                             }
                                             else if (submission.IsRejected)
                                             {
-                                                <span class="badge bg-danger">Rejected</span>
+                                                <span class="badge bg-danger">Odrzucone</span>
                                             }
                                             else
                                             {
-                                                <span class="badge bg-warning">Pending</span>
+                                                <span class="badge bg-warning text-dark">Oczekujące</span>
                                             }
                                         </td>
                                         <td class="text-center">
                                             <a href="@Url.Action("ReviewSubmission", "Admin", new { id = submission.Id })" class="btn btn-sm btn-primary">
-                                                <i class="bi bi-eye"></i> Review
+                                                <i class="bi bi-eye"></i> Sprawdź
                                             </a>
                                         </td>
                                     </tr>
@@ -146,7 +146,7 @@
             else
             {
                 <div class="alert alert-info text-center">
-                    <p>No submissions found</p>
+                    <p>Nie znaleziono żadnych zgłoszeń</p>
                 </div>
             }
         </div>
@@ -163,26 +163,26 @@
                         <table class="table table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>User</th>
-                                    <th>Task</th>
-                                    <th>Submitted</th>
-                                    <th>Reason</th>
-                                    <th class="text-center">Actions</th>
+                                    <th>Użytkownik</th>
+                                    <th>Zadanie</th>
+                                    <th>Przesłano</th>
+                                    <th>Powód odrzucenia</th>
+                                    <th class="text-center">Akcje</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach (var submission in rejected)
                                 {
                                     <tr>
-                                        <td>@(submission.User?.Login ?? "Unknown")</td>
-                                        <td>Task @submission.TaskId</td>
+                                        <td>@(submission.User?.Nickname ?? submission.User?.Login ?? "Nieznany")</td>
+                                        <td>@(submission.Task?.Name ?? $"Zadanie {submission.TaskId}")</td>
                                         <td>
-                                            <small class="text-muted">@submission.SubmittedAt.ToString("MMM dd, yyyy HH:mm")</small>
+                                            <small class="text-muted">@submission.SubmittedAt.ToString("dd.MM.yyyy HH:mm")</small>
                                         </td>
                                         <td>@(submission.RejectionReason ?? "—")</td>
                                         <td class="text-center">
-                                            <a href="@Url.Action("ReviewSubmission", "Admin", new { id = submission.Id })" class="btn btn-sm btn-info">
-                                                <i class="bi bi-eye"></i> View
+                                            <a href="@Url.Action("ReviewSubmission", "Admin", new { id = submission.Id })" class="btn btn-sm btn-info text-white">
+                                                <i class="bi bi-eye"></i> Zobacz
                                             </a>
                                         </td>
                                     </tr>
@@ -195,7 +195,7 @@
             else
             {
                 <div class="alert alert-info text-center">
-                    <p>No rejected submissions</p>
+                    <p>Brak odrzuconych zgłoszeń</p>
                 </div>
             }
         </div>
@@ -212,26 +212,26 @@
                         <table class="table table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>User</th>
-                                    <th>Task</th>
-                                    <th>Approved By</th>
-                                    <th>Approved</th>
-                                    <th class="text-center">Actions</th>
+                                    <th>Użytkownik</th>
+                                    <th>Zadanie</th>
+                                    <th>Zatwierdził</th>
+                                    <th>Data zatw.</th>
+                                    <th class="text-center">Akcje</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach (var submission in approved)
                                 {
                                     <tr>
-                                        <td>@(submission.User?.Login ?? "Unknown")</td>
-                                        <td>Task @submission.TaskId</td>
+                                        <td>@(submission.User?.Nickname ?? submission.User?.Login ?? "Nieznany")</td>
+                                        <td>@(submission.Task?.Name ?? $"Zadanie {submission.TaskId}")</td>
                                         <td>@submission.ApprovedBy</td>
                                         <td>
-                                            <small class="text-muted">@submission.ApprovedAt?.ToString("MMM dd, yyyy HH:mm")</small>
+                                            <small class="text-muted">@submission.ApprovedAt?.ToString("dd.MM.yyyy HH:mm")</small>
                                         </td>
                                         <td class="text-center">
-                                            <a href="@Url.Action("ReviewSubmission", "Admin", new { id = submission.Id })" class="btn btn-sm btn-info">
-                                                <i class="bi bi-eye"></i> View
+                                            <a href="@Url.Action("ReviewSubmission", "Admin", new { id = submission.Id })" class="btn btn-sm btn-info text-white">
+                                                <i class="bi bi-eye"></i> Zobacz
                                             </a>
                                         </td>
                                     </tr>
@@ -244,7 +244,7 @@
             else
             {
                 <div class="alert alert-info text-center">
-                    <p>No approved submissions yet</p>
+                    <p>Brak zatwierdzonych zgłoszeń</p>
                 </div>
             }
         </div>

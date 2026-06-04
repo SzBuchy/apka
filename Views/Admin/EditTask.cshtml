@@ -1,75 +1,49 @@
 @model EventManageApp.Models.Task
 
 @{
-    ViewData["Title"] = "Edit Task";
+    ViewData["Title"] = "Edytuj Zadanie";
 }
 
 <div class="container mt-5">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="row mb-4">
-                <div class="col-md-10">
-                    <a href="@Url.Action("Tasks", "Admin")" class="btn btn-secondary mb-3">← Back to Tasks</a>
-                    <h1>Edit Task</h1>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Edytuj Zadanie</h3>
                 </div>
-            </div>
-
-            <div class="card shadow-sm">
                 <div class="card-body p-4">
-                    <form method="post" asp-action="EditTask">
+                    <form asp-action="EditTask" method="post">
                         <input type="hidden" asp-for="Id" />
 
                         <div class="mb-3">
-                            <label asp-for="Name" class="form-label">Task Name</label>
-                            <input asp-for="Name" class="form-control" placeholder="Enter task name" />
+                            <label asp-for="Name" class="form-label">Nazwa Zadania</label>
+                            <input asp-for="Name" class="form-control" required />
                             <span asp-validation-for="Name" class="text-danger"></span>
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="Description" class="form-label">Description</label>
-                            <textarea asp-for="Description" class="form-control" rows="5" placeholder="Enter task description"></textarea>
+                            <label asp-for="Description" class="form-label">Opis</label>
+                            <textarea asp-for="Description" class="form-control" rows="4" required></textarea>
                             <span asp-validation-for="Description" class="text-danger"></span>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="Points" class="form-label">Points</label>
-                            <input asp-for="Points" type="number" class="form-control" placeholder="0" />
-                            <span asp-validation-for="Points" class="text-danger"></span>
-                            <small class="text-muted">Points that users will earn when completing this task</small>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Points" class="form-label">Punkty</label>
+                                <input asp-for="Points" type="number" class="form-control" required min="0" />
+                                <span asp-validation-for="Points" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3 d-flex align-items-end">
+                                <div class="form-check mb-2">
+                                    <input asp-for="RequiresPhoto" class="form-check-input" type="checkbox" />
+                                    <label asp-for="RequiresPhoto" class="form-check-label">Wymaga Zdjęcia/Wideo</label>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="mb-3 form-check">
-                            <input asp-for="RequiresPhoto" class="form-check-input" type="checkbox" />
-                            <label asp-for="RequiresPhoto" class="form-check-label">
-                                Require Photo or Video Submission
-                            </label>
-                            <small class="d-block text-muted mt-2">When enabled, users must submit a photo or video. The text answer becomes optional.</small>
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <label class="form-label">Task Status</label>
-                            <select class="form-select">
-                                <option selected>Active</option>
-                                <option>Inactive</option>
-                                <option>Archived</option>
-                            </select>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Assigned To</label>
-                            <select class="form-select" multiple>
-                                <option>User 1</option>
-                                <option>User 2</option>
-                                <option>User 3</option>
-                            </select>
-                            <small class="text-muted">Hold Ctrl/Cmd to select multiple users</small>
-                        </div>
-
-                        <hr />
-
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <a href="@Url.Action("Tasks", "Admin")" class="btn btn-secondary">Cancel</a>
-                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a href="@Url.Action("Tasks")" class="btn btn-secondary">Anuluj</a>
+                            <button type="submit" class="btn btn-primary btn-lg">Zapisz Zmiany</button>
                         </div>
                     </form>
                 </div>
@@ -77,9 +51,3 @@
         </div>
     </div>
 </div>
-
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-}

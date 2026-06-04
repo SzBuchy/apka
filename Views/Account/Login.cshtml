@@ -1,7 +1,7 @@
 @model LoginViewModel
 
 @{
-    ViewData["Title"] = "Log In";
+    ViewData["Title"] = "Zaloguj się";
 }
 
 <div class="row justify-content-center mt-5">
@@ -9,32 +9,32 @@
         <div class="card shadow-lg">
             <div class="card-body p-5">
                 <h1 class="text-center mb-4">EventManageApp</h1>
-                <h5 class="text-center text-muted mb-4">Log In to Your Account</h5>
+                <h5 class="text-center text-muted mb-4">Zaloguj się do swojego konta</h5>
 
                 <form method="post">
                     <div class="mb-3">
-                        <label asp-for="Login" class="form-label">Username</label>
-                        <input asp-for="Login" class="form-control" placeholder="Enter your username" required />
+                        <label asp-for="Login" class="form-label">Nazwa użytkownika</label>
+                        <input asp-for="Login" class="form-control" placeholder="Wpisz nazwę użytkownika" required />
                         <span asp-validation-for="Login" class="text-danger"></span>
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="Password" class="form-label">Password</label>
-                        <input asp-for="Password" type="password" class="form-control" placeholder="Enter your password" required />
+                        <label asp-for="Password" class="form-label">Hasło</label>
+                        <input asp-for="Password" type="password" class="form-control" placeholder="Wpisz hasło" required />
                         <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
 
                     <div class="mb-3 form-check">
                         <input asp-for="RememberMe" type="checkbox" class="form-check-input" />
-                        <label asp-for="RememberMe" class="form-check-label">Remember me</label>
+                        <label asp-for="RememberMe" class="form-check-label">Zapamiętaj mnie</label>
                     </div>
 
-                    <button type="submit" class="btn btn-primary w-100 mb-3">Log In</button>
+                    <button type="submit" class="btn btn-primary w-100 mb-3">Zaloguj się</button>
                 </form>
 
                 <hr class="my-4" />
                 <div class="text-center">
-                    <small class="text-muted">Version 1.0.0</small>
+                    <small class="text-muted">Wersja 1.0.0</small>
                 </div>
             </div>
         </div>
@@ -53,9 +53,9 @@
                 <text>
                 Swal.fire({
                     icon: 'error',
-                    title: 'Login Failed',
-                    text: 'The password you entered is incorrect. Please try again.',
-                    confirmButtonText: 'Try Again',
+                    title: 'Logowanie nieudane',
+                    text: 'Wprowadzone hasło jest niepoprawne. Spróbuj ponownie.',
+                    confirmButtonText: 'Spróbuj ponownie',
                     confirmButtonColor: '#0d6efd'
                 });
                 </text>

@@ -1,7 +1,7 @@
 @model List<EventManageApp.Models.User>
 
 @{
-    ViewData["Title"] = "Results Board";
+    ViewData["Title"] = "Tablica wyników";
     var users = Model ?? new List<EventManageApp.Models.User>();
 }
 
@@ -9,9 +9,9 @@
     <div class="row mb-4">
         <div class="col-md-8">
             <h1 class="mb-0">
-                <i class="bi bi-trophy"></i> Results Board
+                <i class="bi bi-trophy"></i> Ranking Uczestników
             </h1>
-            <p class="text-muted">User rankings by points earned</p>
+            <p class="text-muted">Ranking użytkowników według zdobytych punktów</p>
         </div>
     </div>
 
@@ -22,9 +22,9 @@
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th style="width: 80px;">Rank</th>
-                            <th>Username</th>
-                            <th class="text-end">Current Points</th>
+                            <th style="width: 80px;">Miejsce</th>
+                            <th>Uczestnik</th>
+                            <th class="text-end">Punkty</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -54,10 +54,10 @@
                                     }
                                 </td>
                                 <td>
-                                    <strong>@user.Login</strong>
+                                    <strong>@(user.Nickname ?? user.Login)</strong>
                                 </td>
                                 <td class="text-end">
-                                    <span class="badge bg-success fs-6">@user.Points pts</span>
+                                    <span class="badge bg-success fs-6">@user.Points pkt</span>
                                 </td>
                             </tr>
                         }
@@ -69,8 +69,8 @@
     else
     {
         <div class="alert alert-info text-center mt-4">
-            <h5>No users yet</h5>
-            <p>Users will appear here as they earn points</p>
+            <h5>Brak uczestników</h5>
+            <p>Użytkownicy pojawią się tutaj po zdobyciu pierwszych punktów</p>
         </div>
     }
 </div>

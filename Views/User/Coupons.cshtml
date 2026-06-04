@@ -1,106 +1,72 @@
 @model List<EventManageApp.Models.Coupon>
 
 @{
-    ViewData["Title"] = "My Coupons";
+    ViewData["Title"] = "Moje Kupony";
 }
 
 <div class="container mt-5">
     <div class="row mb-4">
-        <div class="col-md-12">
-            <h1><i class="bi bi-ticket-perforated"></i> My Coupons</h1>
-            <p class="text-muted">Show these QR codes to the scaner to redeem your coupons.</p>
+        <div class="col-md-8">
+            <h1 class="mb-0">
+                <i class="bi bi-ticket-perforated"></i> Moje Kupony
+            </h1>
+            <p class="text-muted">Kupony na jedzenie i inne nagrody</p>
         </div>
     </div>
 
-    <div class="row">
-        @if (Model.Count == 0)
-        {
-            <div class="col-12 text-center mt-5">
-                <div class="alert alert-info">
-                    <i class="bi bi-info-circle fs-3"></i>
-                    <p class="mt-2">You don't have any coupons yet.</p>
-                </div>
-            </div>
-        }
-        else
-        {
+    @if (Model != null && Model.Count > 0)
+    {
+        <div class="row">
             @foreach (var coupon in Model)
             {
-                var isExpired = DateTime.Now > coupon.EndDate;
-                var isActive = DateTime.Now >= coupon.StartDate && DateTime.Now <= coupon.EndDate && !coupon.IsUsed;
-                
-                <div class="col-md-4 mb-4">
-                    <div class="card shadow-sm h-100 @(coupon.IsUsed ? "bg-light opacity-75" : "")">
-                        <div class="card-header @(isActive ? "bg-success text-white" : isExpired || coupon.IsUsed ? "bg-secondary text-white" : "bg-info text-white")">
-                            <h5 class="mb-0 text-center">@coupon.Title</h5>
-                        </div>
-                        <div class="card-body text-center d-flex flex-column align-items-center">
-                            @if (!coupon.IsUsed && !isExpired)
-                            {
-                                <div id="qrcode-@coupon.SerialNumber" class="mb-3 p-2 bg-white shadow-sm rounded"></div>
-                                <code class="d-block mb-3">@coupon.SerialNumber</code>
-                            }
-                            else if (coupon.IsUsed)
-                            {
-                                <div class="py-4">
-                                    <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
-                                    <h4 class="mt-2">USED</h4>
-                                    <small class="text-muted">@coupon.UsedAt?.ToString("MMM dd, HH:mm")</small>
-                                </div>
-                            }
-                            else
-                            {
-                                <div class="py-4">
-                                    <i class="bi bi-calendar-x text-danger" style="font-size: 4rem;"></i>
-                                    <h4 class="mt-2 text-danger">EXPIRED</h4>
-                                </div>
-                            }
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card shadow-sm h-100 @(coupon.IsUsed ? "bg-light opacity-75" : "border-primary")">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h5 class="card-title text-primary">@coupon.Title</h5>
+                                @if (coupon.IsUsed)
+                                {
+                                    <span class="badge bg-secondary">Wykorzystany</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">Aktywny</span>
+                                }
+                            </div>
                             
-                            <hr class="w-100" />
-                            <div class="text-start w-100">
-                                <p class="mb-1"><small><strong>Valid From:</strong> @coupon.StartDate.ToString("MMM dd, yyyy")</small></p>
-                                <p class="mb-0"><small><strong>Valid Until:</strong> @coupon.EndDate.ToString("MMM dd, yyyy")</small></p>
+                            <div class="text-center my-3 p-3 bg-white rounded border border-dashed">
+                                <p class="text-muted small mb-1">Numer seryjny:</p>
+                                <h4 class="font-monospace mb-0">@coupon.SerialNumber</h4>
+                            </div>
+
+                            <div class="small text-muted mt-3">
+                                <p class="mb-1"><i class="bi bi-calendar-event"></i> Ważny od: @coupon.StartDate.ToString("dd.MM.yyyy")</p>
+                                <p class="mb-1"><i class="bi bi-calendar-x"></i> Ważny do: @coupon.EndDate.ToString("dd.MM.yyyy")</p>
+                                @if (coupon.IsUsed)
+                                {
+                                    <p class="mb-0 text-danger"><i class="bi bi-check-circle-fill"></i> Wykorzystano: @coupon.UsedAt?.ToString("dd.MM.yyyy HH:mm")</p>
+                                }
                             </div>
                         </div>
-                        <div class="card-footer text-center">
-                            @if (isActive)
+                        <div class="card-footer bg-transparent border-top-0 pb-3">
+                            @if (!coupon.IsUsed)
                             {
-                                <span class="badge bg-success">ACTIVE</span>
-                            }
-                            else if (coupon.IsUsed)
-                            {
-                                <span class="badge bg-secondary">REDEEMED</span>
-                            }
-                            else if (isExpired)
-                            {
-                                <span class="badge bg-danger">EXPIRED</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-info">UPCOMING</span>
+                                <div class="text-center">
+                                    <small class="text-primary"><i class="bi bi-info-circle"></i> Pokaż ten kod przy skanowaniu</small>
+                                </div>
                             }
                         </div>
                     </div>
                 </div>
             }
-        }
-    </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info text-center mt-5 py-5 shadow-sm">
+            <i class="bi bi-ticket-perforated fs-1"></i>
+            <h4 class="mt-3">Nie masz jeszcze żadnych kuponów</h4>
+            <p>Kupony pojawią się tutaj, gdy zostaną Ci przyznane przez organizatorów</p>
+        </div>
+    }
 </div>
-
-@section Scripts {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            @foreach (var coupon in Model.Where(c => !c.IsUsed && DateTime.Now <= c.EndDate))
-            {
-                <text>
-                new QRCode(document.getElementById("qrcode-@coupon.SerialNumber"), {
-                    text: "@coupon.SerialNumber",
-                    width: 150,
-                    height: 150
-                });
-                </text>
-            }
-        });
-    </script>
-}

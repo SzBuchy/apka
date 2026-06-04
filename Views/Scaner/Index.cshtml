@@ -1,42 +1,85 @@
 @{
-    ViewData["Title"] = "Scaner Dashboard";
+    ViewData["Title"] = "Skaner Kuponów";
+    var stats = ViewBag.Stats as List<EventManageApp.Controllers.ScanerController.CouponStat>;
 }
 
 <div class="container mt-5">
-    <div class="row">
+    <div class="row mb-4">
         <div class="col-md-8">
-            <div class="card shadow">
+            <h1 class="mb-0">
+                <i class="bi bi-qr-code-scan"></i> Skaner Kuponów
+            </h1>
+            <p class="text-muted">Weryfikuj kupony uczestników wpisując ich numer seryjny</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <!-- Scan/Entry Card -->
+            <div class="card shadow-sm border-primary mb-4">
                 <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0"><i class="bi bi-qr-code-scan"></i> Scan Coupon</h4>
+                    <h5 class="mb-0">Walidacja Kuponu</h5>
                 </div>
-                <div class="card-body">
-                    <div id="reader" style="width: 100%; min-height: 300px;"></div>
-                    <div id="result" class="mt-3"></div>
+                <div class="card-body p-4">
+                    <form id="validateForm">
+                        <div class="mb-4">
+                            <label for="serialNumber" class="form-label fw-bold">Numer Seryjny Kuponu</label>
+                            <input type="text" 
+                                   id="serialNumber" 
+                                   class="form-control form-control-lg font-monospace" 
+                                   placeholder="np. CPN-XXXXXXXX" 
+                                   style="text-transform: uppercase;"
+                                   required />
+                            <div class="form-text mt-2">Wpisz kod podany przez uczestnika.</div>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg" id="btnValidate">
+                                <i class="bi bi-check-circle"></i> Waliduj Kupon
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Result Display (Hidden initially) -->
+            <div id="resultArea" class="mt-4 d-none">
+                <div class="card shadow-sm" id="resultCard">
+                    <div class="card-body text-center p-4">
+                        <div id="resultIcon" class="mb-3"></div>
+                        <h3 id="resultTitle"></h3>
+                        <p id="resultMessage" class="lead"></p>
+                        <div id="resultDetails" class="alert d-none mt-3"></div>
+                        <button class="btn btn-outline-secondary mt-3" onclick="resetForm()">Skanuj następny</button>
+                    </div>
                 </div>
             </div>
         </div>
-        
-        <div class="col-md-4">
-            <div class="card shadow">
-                <div class="card-header bg-dark text-white">
-                    <h4 class="mb-0"><i class="bi bi-bar-chart"></i> Today's Stats</h4>
+
+        <div class="col-md-6">
+            <!-- Stats Card -->
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Statystyki wykorzystania (Dziś)</h5>
                 </div>
                 <div class="card-body">
-                    <ul class="list-group list-group-flush" id="stats-list">
-                        @{
-                            var stats = ViewBag.Stats as List<EventManageApp.Controllers.ScanerController.CouponStat> ?? new List<EventManageApp.Controllers.ScanerController.CouponStat>();
-                        }
-                        @foreach (var stat in stats)
-                        {
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                @stat.Title
-                                <span class="badge bg-primary rounded-pill">@stat.Count</span>
-                            </li>
-                        }
-                    </ul>
-                    @if (stats.Count == 0)
+                    @if (stats != null && stats.Count > 0)
                     {
-                        <p class="text-muted text-center mt-3">No coupons scanned yet today.</p>
+                        <div class="list-group list-group-flush">
+                            @foreach (var stat in stats)
+                            {
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>@stat.Title</span>
+                                    <span class="badge bg-primary rounded-pill">@stat.Count</span>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4 text-muted">
+                            <i class="bi bi-bar-chart fs-1 d-block mb-2"></i>
+                            Brak wykorzystanych kuponów w dniu dzisiejszym.
+                        </div>
                     }
                 </div>
             </div>
@@ -45,39 +88,78 @@
 </div>
 
 @section Scripts {
-    <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        function onScanSuccess(decodedText, decodedResult) {
-            // Stop scanning temporarily
-            html5QrcodeScanner.pause();
-            
-            // Send to server for validation
-            $.post('/Scaner/ValidateCoupon', { serialNumber: decodedText }, function(response) {
-                if (response.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Valid Coupon!',
-                        text: response.title + (response.user ? ' for user ' + response.user : ''),
-                        confirmButtonText: 'Next Scan'
-                    }).then(() => {
-                        location.reload(); // Refresh to update stats
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Invalid Coupon',
-                        text: response.message,
-                        confirmButtonText: 'Try Again'
-                    }).then(() => {
-                        html5QrcodeScanner.resume();
-                    });
+        $(document).ready(function() {
+            $('#validateForm').on('submit', function(e) {
+                e.preventDefault();
+                validate();
+            });
+
+            // Auto-focus the input
+            $('#serialNumber').focus();
+        });
+
+        function validate() {
+            const serial = $('#serialNumber').val().trim();
+            if (!serial) return;
+
+            const btn = $('#btnValidate');
+            btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Przetwarzanie...');
+
+            $.ajax({
+                url: '@Url.Action("ValidateCoupon", "Scaner")',
+                type: 'POST',
+                data: { serialNumber: serial },
+                success: function(response) {
+                    showResult(response);
+                },
+                error: function() {
+                    Swal.fire('Błąd', 'Wystąpił błąd podczas komunikacji z serwerem.', 'error');
+                },
+                complete: function() {
+                    btn.prop('disabled', false).html('<i class="bi bi-check-circle"></i> Waliduj Kupon');
                 }
             });
         }
 
-        let html5QrcodeScanner = new Html5QrcodeScanner(
-            "reader", { fps: 10, qrbox: 250 });
-        html5QrcodeScanner.render(onScanSuccess);
+        function showResult(response) {
+            const area = $('#resultArea');
+            const card = $('#resultCard');
+            const icon = $('#resultIcon');
+            const title = $('#resultTitle');
+            const msg = $('#resultMessage');
+            const details = $('#resultDetails');
+
+            area.removeClass('d-none');
+            details.addClass('d-none');
+            
+            if (response.success) {
+                card.removeClass('border-danger').addClass('border-success');
+                icon.html('<i class="bi bi-check-circle-fill text-success fs-1"></i>');
+                title.text('Sukces!').addClass('text-success').removeClass('text-danger');
+                msg.text(response.message);
+                details.removeClass('d-none').removeClass('alert-danger').addClass('alert-success')
+                       .html(`<strong>Kupon:</strong> ${response.title}<br><strong>Użytkownik:</strong> ${response.user}`);
+                
+                // Play success sound if available
+                // new Audio('/sounds/success.mp3').play();
+            } else {
+                card.removeClass('border-success').addClass('border-danger');
+                icon.html('<i class="bi bi-x-circle-fill text-danger fs-1"></i>');
+                title.text('Niepowodzenie').addClass('text-danger').removeClass('text-success');
+                msg.text(response.message);
+            }
+
+            // Smooth scroll to result
+            $('html, body').animate({
+                scrollTop: area.offset().top - 100
+            }, 500);
+        }
+
+        function resetForm() {
+            $('#serialNumber').val('').focus();
+            $('#resultArea').addClass('d-none');
+        }
     </script>
 }

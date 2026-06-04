@@ -1,10 +1,20 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Strona Główna";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <h2>to EventManageApp</h2>
-    <a class="btn btn-primary" href="/Events">View Events</a>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="text-center mt-5 py-5">
+    <h1 class="display-4">Witaj w</h1>
+    <h2 class="mb-4 text-primary fw-bold">EventManageApp</h2>
+    <p class="lead mb-4">Twój centralny system zarządzania zadaniami i kuponami podczas wydarzenia.</p>
+    
+    <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <a class="btn btn-primary btn-lg px-4 gap-3" href="@Url.Action("Index", "User")">Przejdź do zadań</a>
+        }
+        else
+        {
+            <a class="btn btn-primary btn-lg px-4 gap-3" href="@Url.Action("Login", "Account")">Zaloguj się</a>
+        }
+    </div>
 </div>

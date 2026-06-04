@@ -17,7 +17,7 @@ public class AdminController : Controller
 
     private bool IsAdmin()
     {
-        return HttpContext.Session.GetString("IsAdmin") == "true";
+        return User.IsInRole("Admin");
     }
 
     public IActionResult Index()
@@ -137,7 +137,7 @@ public class AdminController : Controller
         submission.IsRejected = false;
         submission.RejectionReason = null;
         submission.ApprovedAt = DateTime.Now;
-        submission.ApprovedBy = HttpContext.Session.GetString("Username") ?? "admin";
+        submission.ApprovedBy = User.Identity?.Name ?? "admin";
         submission.ApprovalNotes = approvalNotes;
 
         // Award points to user (only once)
@@ -227,6 +227,24 @@ public class AdminController : Controller
             user.Login, user.Points, newPoints);
 
         user.Points = newPoints;
+        _db.Users.Update(user);
+        await _db.SaveChangesAsync();
+
+        return RedirectToAction("Leaderboard");
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> UpdateNickname(int userId, string newNickname)
+    {
+        if (!IsAdmin()) return Forbid();
+
+        var user = await _db.Users.FindAsync(userId);
+        if (user == null) return NotFound();
+
+        _logger.LogInformation("Admin manually changed nickname for user {Login} from {OldNickname} to {NewNickname}",
+            user.Login, user.Nickname, newNickname);
+
+        user.Nickname = newNickname;
         _db.Users.Update(user);
         await _db.SaveChangesAsync();
 

@@ -39,6 +39,9 @@ namespace EventManageApp.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("Nickname")
+                        .HasColumnType("text");
+
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("text");
@@ -211,7 +214,7 @@ namespace EventManageApp.Data.Migrations
             modelBuilder.Entity("EventManageApp.Models.Coupon", b =>
                 {
                     b.HasOne("EventManageApp.Models.User", "User")
-                        .WithMany()
+                        .WithMany("Coupons")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -240,6 +243,8 @@ namespace EventManageApp.Data.Migrations
 
             modelBuilder.Entity("EventManageApp.Models.User", b =>
                 {
+                    b.Navigation("Coupons");
+
                     b.Navigation("TaskSubmissions");
                 });
 #pragma warning restore 612, 618

@@ -1,7 +1,7 @@
 @model EventManageApp.Models.TaskSubmission
 
 @{
-    ViewData["Title"] = "Review Submission";
+    ViewData["Title"] = "Recenzja Zgłoszenia";
     var task = ViewBag.Task as EventManageApp.Models.Task;
     var user = ViewBag.User as EventManageApp.Models.User;
 }
@@ -9,8 +9,8 @@
 <div class="container mt-5">
     <div class="row mb-4">
         <div class="col-md-12">
-            <a href="@Url.Action("Submissions", "Admin")" class="btn btn-secondary mb-3">← Back to Submissions</a>
-            <h1>Review Submission</h1>
+            <a href="@Url.Action("Submissions", "Admin")" class="btn btn-secondary mb-3">← Powrót do zgłoszeń</a>
+            <h1>Recenzja Zgłoszenia</h1>
         </div>
     </div>
 
@@ -20,29 +20,33 @@
             <!-- User & Task Info -->
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-light">
-                    <h5 class="mb-0">Submission Information</h5>
+                    <h5 class="mb-0">Informacje o zgłoszeniu</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
-                            <p><strong>Task:</strong> @task?.Name</p>
-                            <p><strong>Points Available:</strong> <span class="badge bg-success">@task?.Points pts</span></p>
+                            <p><strong>Zadanie:</strong> @task?.Name</p>
+                            <p><strong>Punkty do zdobycia:</strong> <span class="badge bg-success">@task?.Points pkt</span></p>
                         </div>
                         <div class="col-md-6">
-                            <p><strong>User:</strong> @user?.Login</p>
-                            <p><strong>User Points:</strong> <span class="badge bg-info">@user?.Points</span></p>
+                            <p><strong>Użytkownik:</strong> @(user?.Nickname ?? user?.Login)</p>
+                            <p><strong>Punkty użytkownika:</strong> <span class="badge bg-info text-white">@user?.Points</span></p>
                         </div>
                     </div>
                     <hr />
-                    <p><strong>Submitted:</strong> @Model?.SubmittedAt.ToString("dddd, MMMM dd, yyyy 'at' HH:mm:ss")</p>
+                    <p><strong>Przesłano:</strong> @Model?.SubmittedAt.ToString("dddd, dd MMMM yyyy 'o' HH:mm:ss")</p>
                     <p><strong>Status:</strong>
                         @if (Model?.IsApproved ?? false)
                         {
-                            <span class="badge bg-success">Approved</span>
+                            <span class="badge bg-success">Zatwierdzone</span>
+                        }
+                        else if (Model?.IsRejected ?? false)
+                        {
+                            <span class="badge bg-danger">Odrzucone</span>
                         }
                         else
                         {
-                            <span class="badge bg-warning">Pending Review</span>
+                            <span class="badge bg-warning text-dark">Oczekuje na weryfikację</span>
                         }
                     </p>
                 </div>
@@ -51,7 +55,7 @@
             <!-- Task Description -->
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-light">
-                    <h5 class="mb-0">Task Description</h5>
+                    <h5 class="mb-0">Opis zadania</h5>
                 </div>
                 <div class="card-body">
                     <p>@task?.Description</p>
@@ -61,7 +65,7 @@
             <!-- User's Answer -->
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-light">
-                    <h5 class="mb-0">User's Submission</h5>
+                    <h5 class="mb-0">Odpowiedź użytkownika</h5>
                 </div>
                 <div class="card-body">
                     <div class="submission-answer" style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; white-space: pre-wrap; font-family: monospace; max-height: 400px; overflow-y: auto;">
@@ -75,7 +79,7 @@
             {
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-light">
-                        <h5 class="mb-0">Submitted Photo/Video</h5>
+                        <h5 class="mb-0">Przesłane zdjęcie/wideo</h5>
                     </div>
                     <div class="card-body text-center">
                         @if (!string.IsNullOrEmpty(Model.CloudinaryUrl))
@@ -84,68 +88,22 @@
                             {
                                 <video controls class="img-fluid rounded shadow-sm" style="max-width: 100%; max-height: 500px;">
                                     <source src="@Model.CloudinaryUrl" type="@Model.FileContentType">
-                                    Your browser does not support the video tag.
+                                    Twoja przeglądarka nie obsługuje tagu wideo.
                                 </video>
                             }
                             else
                             {
                                 <a href="@Model.CloudinaryUrl" target="_blank">
                                     <img src="@Model.CloudinaryUrl" 
-                                         alt="Submission" 
+                                         alt="Zgłoszenie" 
                                          class="img-fluid rounded shadow-sm" 
                                          style="max-width: 100%; max-height: 500px;" />
                                 </a>
                             }
                             <p class="text-muted mt-2 mb-0">
-                                <small>Stored in Cloudinary</small>
+                                <small>Przechowywane w Cloudinary</small>
                             </p>
                         }
-                        else if (Model.SubmissionFile != null && Model.SubmissionFile.Length > 0)
-                        {
-                            @if (Model.FileContentType?.StartsWith("image/") == true)
-                            {
-                                <img src="@Url.Action("SubmissionFile", "Admin", new { id = Model.Id })" 
-                                     alt="Submission" 
-                                     class="img-fluid rounded shadow-sm" 
-                                     style="max-width: 100%; max-height: 500px;" />
-                                <p class="text-muted mt-2 mb-0">
-                                    <small><strong>File:</strong> @Model.FileName (Stored in Database)</small>
-                                </p>
-                            }
-                            else if (Model.FileContentType?.StartsWith("video/") == true)
-                            {
-                                <video controls class="img-fluid rounded shadow-sm" style="max-width: 100%; max-height: 500px;">
-                                    <source src="@Url.Action("SubmissionFile", "Admin", new { id = Model.Id })" type="@Model.FileContentType">
-                                    Your browser does not support the video tag.
-                                </video>
-                                <p class="text-muted mt-2 mb-0">
-                                    <small><strong>File:</strong> @Model.FileName (Stored in Database)</small>
-                                </p>
-                            }
-                            else
-                            {
-                                <p>
-                                    <i class="bi bi-file-earmark"></i> 
-                                    <a href="@Url.Action("SubmissionFile", "Admin", new { id = Model.Id })" 
-                                       download="@Model.FileName">
-                                        @Model.FileName
-                                    </a>
-                                </p>
-                            }
-                        }
-                    </div>
-                </div>
-            }
-
-            <!-- Additional Notes -->
-            @if (!string.IsNullOrEmpty(Model?.ApprovalNotes))
-            {
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0">Additional Notes</h5>
-                    </div>
-                    <div class="card-body">
-                        <p>@Model?.ApprovalNotes</p>
                     </div>
                 </div>
             }
@@ -155,28 +113,28 @@
             {
                 <div class="card shadow-sm border-primary mb-4">
                     <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">Review Decision</h5>
+                        <h5 class="mb-0">Decyzja</h5>
                     </div>
                     <div class="card-body">
                         <form method="post" id="approvalForm">
                             <input type="hidden" name="id" value="@Model?.Id" />
 
                             <div class="mb-3">
-                                <label for="approvalNotes" class="form-label">Approval Notes (for approved submissions)</label>
-                                <textarea class="form-control" id="approvalNotes" name="approvalNotes" rows="3" placeholder="Provide feedback to the user..."></textarea>
+                                <label for="approvalNotes" class="form-label">Notatki do zatwierdzenia (dla użytkownika)</label>
+                                <textarea class="form-control" id="approvalNotes" name="approvalNotes" rows="3" placeholder="Przekaż opinię użytkownikowi..."></textarea>
                             </div>
 
                             <div class="mb-3">
-                                <label for="rejectionReason" class="form-label">Rejection Reason (for rejected submissions)</label>
-                                <textarea class="form-control" id="rejectionReason" name="rejectionReason" rows="3" placeholder="Explain why this submission is being rejected..."></textarea>
+                                <label for="rejectionReason" class="form-label">Powód odrzucenia</label>
+                                <textarea class="form-control" id="rejectionReason" name="rejectionReason" rows="3" placeholder="Wyjaśnij, dlaczego zgłoszenie zostało odrzucone..."></textarea>
                             </div>
 
                             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                                <button type="submit" formaction="@Url.Action("RejectSubmission", "Admin")" formmethod="post" class="btn btn-danger" onclick="return confirm('Are you sure you want to reject this submission?');">
-                                    <i class="bi bi-x-circle"></i> Reject
+                                <button type="submit" formaction="@Url.Action("RejectSubmission", "Admin")" formmethod="post" class="btn btn-danger" onclick="return confirm('Czy na pewno chcesz odrzucić to zgłoszenie?');">
+                                    <i class="bi bi-x-circle"></i> Odrzuć
                                 </button>
                                 <button type="submit" formaction="@Url.Action("ApproveSubmission", "Admin")" formmethod="post" class="btn btn-success btn-lg">
-                                    <i class="bi bi-check-circle"></i> Approve & Award Points
+                                    <i class="bi bi-check-circle"></i> Zatwierdź i przyznaj punkty
                                 </button>
                             </div>
                         </form>
@@ -188,25 +146,25 @@
                 <div class="alert alert-success d-flex justify-content-between align-items-center" role="alert">
                     <div>
                         <h5 class="alert-heading mb-1">
-                            <i class="bi bi-check-circle"></i> Submission Approved
+                            <i class="bi bi-check-circle"></i> Zgłoszenie zatwierdzone
                         </h5>
-                        <p class="mb-0">This submission has been approved. Points have been awarded to the user.</p>
+                        <p class="mb-0">To zgłoszenie zostało zatwierdzone. Punkty zostały przyznane użytkownikowi.</p>
                     </div>
                     <form method="post" asp-action="ChangeDecision">
                         <input type="hidden" name="id" value="@Model.Id" />
                         <button type="submit" class="btn btn-outline-success btn-sm">
-                            <i class="bi bi-arrow-counterclockwise"></i> Change Decision
+                            <i class="bi bi-arrow-counterclockwise"></i> Zmień decyzję
                         </button>
                     </form>
                 </div>
                 
                 <div class="card shadow-sm mb-4">
                     <div class="card-body">
-                        <p><strong>Approved By:</strong> @Model?.ApprovedBy</p>
-                        <p><strong>Approved At:</strong> @Model?.ApprovedAt?.ToString("dddd, MMMM dd, yyyy 'at' HH:mm:ss")</p>
+                        <p><strong>Zatwierdził:</strong> @Model?.ApprovedBy</p>
+                        <p><strong>Data zatwierdzenia:</strong> @Model?.ApprovedAt?.ToString("dddd, dd MMMM yyyy 'o' HH:mm:ss")</p>
                         @if (!string.IsNullOrEmpty(Model?.ApprovalNotes))
                         {
-                            <p class="mb-0"><strong>Notes:</strong> @Model?.ApprovalNotes</p>
+                            <p class="mb-0"><strong>Notatki:</strong> @Model?.ApprovalNotes</p>
                         }
                     </div>
                 </div>
@@ -216,21 +174,21 @@
                 <div class="alert alert-danger d-flex justify-content-between align-items-center" role="alert">
                     <div>
                         <h5 class="alert-heading mb-1">
-                            <i class="bi bi-x-circle"></i> Submission Rejected
+                            <i class="bi bi-x-circle"></i> Zgłoszenie odrzucone
                         </h5>
-                        <p class="mb-0">This submission has been rejected. No points were awarded.</p>
+                        <p class="mb-0">To zgłoszenie zostało odrzucone. Punkty nie zostały przyznane.</p>
                     </div>
                     <form method="post" asp-action="ChangeDecision">
                         <input type="hidden" name="id" value="@Model.Id" />
                         <button type="submit" class="btn btn-outline-danger btn-sm">
-                            <i class="bi bi-arrow-counterclockwise"></i> Change Decision
+                            <i class="bi bi-arrow-counterclockwise"></i> Zmień decyzję
                         </button>
                     </form>
                 </div>
 
                 <div class="card shadow-sm mb-4">
                     <div class="card-body">
-                        <p class="mb-0"><strong>Rejection Reason:</strong> @Model?.RejectionReason</p>
+                        <p class="mb-0"><strong>Powód odrzucenia:</strong> @Model?.RejectionReason</p>
                     </div>
                 </div>
             }
@@ -241,21 +199,19 @@
             <!-- Quick Stats -->
             <div class="card shadow-sm mb-3">
                 <div class="card-header bg-light">
-                    <h5 class="mb-0">Quick Stats</h5>
+                    <h5 class="mb-0">Szybkie statystyki</h5>
                 </div>
                 <div class="card-body">
                     <p class="mb-2">
-                        <strong>Answer Length:</strong><br>
-                        <span class="badge bg-info">@Model?.Answer?.Length characters</span>
+                        <strong>Długość odpowiedzi:</strong><br>
+                        <span class="badge bg-info text-white">@Model?.Answer?.Length znaków</span>
                     </p>
                     <p>
-                        <strong>Days Pending:</strong><br>
-                        <span class="badge bg-warning">@((DateTime.Now - (Model?.SubmittedAt ?? DateTime.Now)).Days) days</span>
+                        <strong>Dni w oczekiwaniu:</strong><br>
+                        <span class="badge bg-warning text-dark">@((DateTime.Now - (Model?.SubmittedAt ?? DateTime.Now)).Days) dni</span>
                     </p>
                 </div>
             </div>
-
-            <!-- Review checklist removed -->
         </div>
     </div>
 </div>

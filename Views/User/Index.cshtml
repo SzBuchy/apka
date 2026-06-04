@@ -1,23 +1,23 @@
 @model List<EventManageApp.Models.Task>
 
 @{
-    ViewData["Title"] = "Available Tasks";
+    ViewData["Title"] = "Dostępne Zadania";
     var currentUser = ViewBag.CurrentUser as EventManageApp.Models.User;
 }
 
 <div class="container mt-5">
     <div class="row mb-4">
         <div class="col-md-8">
-            <h1 class="mb-0">Available Tasks</h1>
-            <p class="text-muted">Complete tasks and earn points</p>
+            <h1 class="mb-0">Dostępne Zadania</h1>
+            <p class="text-muted">Wykonuj zadania i zdobywaj punkty</p>
         </div>
         <div class="col-md-4 text-end">
             @if (currentUser != null)
             {
                 <div class="card shadow-sm">
                     <div class="card-body text-center">
-                        <h6 class="card-title text-muted mb-1">Your Points</h6>
-                        <h3 class="text-success">@currentUser.Points <small>pts</small></h3>
+                        <h6 class="card-title text-muted mb-1">Twoje Punkty</h6>
+                        <h3 class="text-success">@currentUser.Points <small>pkt</small></h3>
                         <small class="text-muted">@currentUser.Login</small>
                     </div>
                 </div>
@@ -44,19 +44,19 @@
                         if (submission.IsApproved)
                         {
                             badgeClass = "bg-success";
-                            statusText = "Approved";
+                            statusText = "Zatwierdzone";
                             isDisabled = true;
                         }
                         else if (submission.IsRejected)
                         {
                             badgeClass = "bg-danger";
-                            statusText = "Rejected";
+                            statusText = "Odrzucone";
                             canResubmit = true;
                         }
                         else
                         {
                             badgeClass = "bg-warning text-dark";
-                            statusText = "Pending";
+                            statusText = "Oczekiwanie";
                             isDisabled = true;
                         }
                     }
@@ -73,17 +73,17 @@
                             <h5 class="card-title">@task.Name</h5>
                             <p class="card-text text-muted flex-grow-1">@task.Description</p>
                             <div class="d-flex justify-content-between align-items-center">
-                                <span class="badge bg-success">@task.Points pts</span>
+                                <span class="badge bg-success">@task.Points pkt</span>
                                 @if (!isDisabled || canResubmit)
                                 {
                                     <a href="@Url.Action("Details", "User", new { id = task.Id })" class="btn btn-sm btn-primary">
                                         @if (canResubmit)
                                         {
-                                            <span>Resubmit</span>
+                                            <span>Prześlij ponownie</span>
                                         }
                                         else
                                         {
-                                            <span>View & Submit</span>
+                                            <span>Zobacz i prześlij</span>
                                         }
                                     </a>
                                 }
@@ -96,7 +96,7 @@
                             </div>
                             @if (submission?.IsRejected == true && !string.IsNullOrEmpty(submission.RejectionReason))
                             {
-                                <small class="text-danger mt-2">Reason: @submission.RejectionReason</small>
+                                <small class="text-danger mt-2">Powód: @submission.RejectionReason</small>
                             }
                         </div>
                     </div>
@@ -107,8 +107,8 @@
     else
     {
         <div class="alert alert-info text-center mt-4">
-            <h5>No tasks available</h5>
-            <p>Please check back later for new tasks</p>
+            <h5>Brak dostępnych zadań</h5>
+            <p>Zajrzyj tu później po nowe wyzwania</p>
         </div>
     }
 </div>

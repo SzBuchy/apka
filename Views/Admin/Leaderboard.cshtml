@@ -1,18 +1,18 @@
 @model List<EventManageApp.Models.User>
 
 @{
-    ViewData["Title"] = "Results Board";
+    ViewData["Title"] = "Zarządzanie Rankingiem";
     var users = Model ?? new List<EventManageApp.Models.User>();
-    var isAdmin = Context.Session.GetString("IsAdmin") == "true";
+    var isAdmin = User.IsInRole("Admin");
 }
 
 <div class="container mt-5">
     <div class="row mb-4">
         <div class="col-md-8">
             <h1 class="mb-0">
-                <i class="bi bi-trophy"></i> Results Board
+                <i class="bi bi-trophy"></i> Zarządzanie Rankingiem
             </h1>
-            <p class="text-muted">User rankings by points earned</p>
+            <p class="text-muted">Podgląd uczestników i moderacja punktów/pseudonimów</p>
         </div>
     </div>
 
@@ -23,12 +23,12 @@
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th style="width: 80px;">Rank</th>
-                            <th>Username</th>
-                            <th class="text-end">Current Points</th>
+                            <th style="width: 80px;">Ranga</th>
+                            <th>Użytkownik (Login / Pseudonim)</th>
+                            <th class="text-end">Punkty</th>
                             @if (isAdmin)
                             {
-                                <th class="text-center" style="width: 250px;">Manual Adjustment</th>
+                                <th class="text-center" style="width: 350px;">Zarządzanie</th>
                             }
                         </tr>
                     </thead>
@@ -38,9 +38,9 @@
                             var user = users[i];
                             var rank = i + 1;
                             var badgeClass = rank == 1 ? "bg-warning text-dark" : 
-                                           rank == 2 ? "bg-secondary" : 
-                                           rank == 3 ? "bg-danger" : 
-                                           "bg-info";
+                                           rank == 2 ? "bg-secondary text-white" : 
+                                           rank == 3 ? "bg-danger text-white" : 
+                                           "bg-info text-white";
                             
                             <tr>
                                 <td>
@@ -59,21 +59,39 @@
                                     }
                                 </td>
                                 <td>
-                                    <strong>@user.Login</strong>
+                                    <div>
+                                        <strong>@user.Login</strong>
+                                        <br />
+                                        <small class="text-muted">Nick: @(user.Nickname ?? "—")</small>
+                                    </div>
                                 </td>
                                 <td class="text-end">
-                                    <span class="badge bg-success fs-6">@user.Points pts</span>
+                                    <span class="badge bg-success fs-6">@user.Points pkt</span>
                                 </td>
                                 @if (isAdmin)
                                 {
                                     <td class="text-center">
-                                        <form asp-action="UpdateUserPoints" method="post" class="d-flex justify-content-center align-items-center gap-2">
-                                            <input type="hidden" name="userId" value="@user.Id" />
-                                            <input type="number" name="newPoints" value="@user.Points" class="form-control form-control-sm" style="width: 100px;" required />
-                                            <button type="submit" class="btn btn-sm btn-outline-primary">
-                                                <i class="bi bi-save"></i> Save
-                                            </button>
-                                        </form>
+                                        <div class="d-flex flex-column gap-2">
+                                            <!-- Points adjustment -->
+                                            <form asp-action="UpdateUserPoints" method="post" class="d-flex justify-content-center align-items-center gap-2">
+                                                <input type="hidden" name="userId" value="@user.Id" />
+                                                <div class="input-group input-group-sm">
+                                                    <span class="input-group-text">Pkt</span>
+                                                    <input type="number" name="newPoints" value="@user.Points" class="form-control" style="max-width: 80px;" required />
+                                                    <button type="submit" class="btn btn-outline-primary">Zapisz</button>
+                                                </div>
+                                            </form>
+                                            
+                                            <!-- Nickname adjustment -->
+                                            <form asp-action="UpdateNickname" method="post" class="d-flex justify-content-center align-items-center gap-2">
+                                                <input type="hidden" name="userId" value="@user.Id" />
+                                                <div class="input-group input-group-sm">
+                                                    <span class="input-group-text">Nick</span>
+                                                    <input type="text" name="newNickname" value="@user.Nickname" class="form-control" placeholder="Zmień nick" required />
+                                                    <button type="submit" class="btn btn-outline-warning">Zmień</button>
+                                                </div>
+                                            </form>
+                                        </div>
                                     </td>
                                 }
                             </tr>
@@ -86,8 +104,8 @@
     else
     {
         <div class="alert alert-info text-center mt-4">
-            <h5>No users yet</h5>
-            <p>Users will appear here as they earn points</p>
+            <h5>Brak użytkowników</h5>
+            <p>Użytkownicy pojawią się tutaj po zarejestrowaniu w systemie</p>
         </div>
     }
 </div>

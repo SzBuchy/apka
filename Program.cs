@@ -25,6 +25,19 @@ builder.Services.AddSingleton(new Cloudinary(cloudinaryAccount));
 builder.Services.AddControllersWithViews();
 builder.Services.AddSession();
 
+builder.Services.AddAuthentication(options => {
+    options.DefaultAuthenticateScheme = "CookieAuth";
+    options.DefaultSignInScheme = "CookieAuth";
+    options.DefaultChallengeScheme = "CookieAuth";
+})
+    .AddCookie("CookieAuth", options =>
+    {
+        options.Cookie.Name = "UserAuthCookie";
+        options.LoginPath = "/Account/Login";
+        options.AccessDeniedPath = "/Account/Login";
+        options.ExpireTimeSpan = TimeSpan.FromDays(30);
+    });
+
 // configure EF Core with PostgreSQL (Supabase)
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
                        ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -53,59 +66,50 @@ using (var scope = app.Services.CreateScope())
         var db = scope.ServiceProvider.GetRequiredService<EventManageApp.Data.ApplicationDbContext>();
         db.Database.Migrate();
         
-    // Only seed if Users/Accounts table is empty
-    if (!db.Accounts.Any())
-    {
-        var admin = new EventManageApp.Models.User { Login = "admin", Password = "123", Role = "Admin", Points = 0, IsActive = true };
-        db.Users.Add(admin);
-        
-        var testUsers = new List<EventManageApp.Models.User>
+        // Only seed if Users/Accounts table is empty
+        if (!db.Accounts.Any())
         {
-            new() { Login = "alice", Password = "pass", Role = "User", Points = 950 },
-            new() { Login = "bob", Password = "pass", Role = "User", Points = 850 },
-            new() { Login = "charlie", Password = "pass", Role = "User", Points = 720 },
-            new() { Login = "diana", Password = "pass", Role = "User", Points = 680 },
-            new() { Login = "evan", Password = "pass", Role = "User", Points = 610 },
-            new() { Login = "frank", Password = "pass", Role = "User", Points = 550 },
-            new() { Login = "grace", Password = "pass", Role = "User", Points = 480 },
-            new() { Login = "henry", Password = "pass", Role = "User", Points = 420 },
-            new() { Login = "iris", Password = "pass", Role = "User", Points = 350 },
-            new() { Login = "jack", Password = "pass", Role = "User", Points = 280 }
-        };
-        
-        db.Users.AddRange(testUsers);
-        db.SaveChanges();
-    }
-    else
-    {
-        // Ensure admin account exists even if users are already seeded
-        var admin = db.Users.FirstOrDefault(u => u.Login == "admin");
-        if (admin == null)
-        {
-            db.Users.Add(new EventManageApp.Models.User { Login = "admin", Password = "123", Role = "Admin", Points = 0 });
-            db.SaveChanges();
-        }
-        else 
-        {
-            bool changed = false;
-            if (admin.Password != "123") { admin.Password = "123"; changed = true; }
-            if (admin.Role != "Admin") { admin.Role = "Admin"; changed = true; }
-            if (changed) db.SaveChanges();
-        }
+            var random = new Random();
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            string GenerateRandomString(int length) => new string(Enumerable.Repeat(chars, length).Select(s => s[random.Next(s.Length)]).ToArray());
 
-        // Ensure scaner account exists
-        var scaner = db.Accounts.FirstOrDefault(a => a.Login == "scaner");
-        if (scaner == null)
-        {
-            db.Accounts.Add(new EventManageApp.Models.Scaner { Login = "scaner", Password = "123", Role = "Scaner" });
+            var newUsers = new List<EventManageApp.Models.User>();
+            var csvLines = new List<string> { "Login,Password,Role" };
+
+            // Re-add Admin and Scaner for management
+            var admin = new EventManageApp.Models.User { Login = "admin", Password = "123", Role = "Admin", Points = 0, IsActive = true };
+            db.Users.Add(admin);
+            csvLines.Add("admin,123,Admin");
+
+            var scaner = new EventManageApp.Models.Scaner { Login = "scaner", Password = "123", Role = "Scaner" };
+            db.Accounts.Add(scaner);
+            csvLines.Add("scaner,123,Scaner");
+
+            // Generate 200 random users
+            for (int i = 1; i <= 200; i++)
+            {
+                var login = "user_" + GenerateRandomString(6);
+                var password = GenerateRandomString(10);
+                
+                newUsers.Add(new EventManageApp.Models.User 
+                { 
+                    Login = login, 
+                    Password = password, 
+                    Role = "User", 
+                    Points = 0, 
+                    IsActive = true 
+                });
+                
+                csvLines.Add($"{login},{password},User");
+            }
+            
+            db.Users.AddRange(newUsers);
             db.SaveChanges();
+
+            // Save to CSV file
+            File.WriteAllLines("generated_users.csv", csvLines);
+            Console.WriteLine("Successfully generated 200 users and saved to generated_users.csv");
         }
-        else if (scaner.Role != "Scaner")
-        {
-            scaner.Role = "Scaner";
-            db.SaveChanges();
-        }
-    }
     }
     catch (Exception ex)
     {
@@ -126,6 +130,7 @@ app.UseHttpsRedirection();
 app.UseSession();
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
