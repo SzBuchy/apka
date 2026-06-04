@@ -110,6 +110,25 @@ using (var scope = app.Services.CreateScope())
             File.WriteAllLines("generated_users.csv", csvLines);
             Console.WriteLine("Successfully generated 200 users and saved to generated_users.csv");
         }
+        else
+        {
+            // Ensure admin account exists even if users are already seeded
+            var admin = db.Accounts.FirstOrDefault(u => u.Login == "admin");
+            if (admin == null)
+            {
+                db.Users.Add(new EventManageApp.Models.User { Login = "admin", Password = "123", Role = "Admin", Points = 0 });
+                db.SaveChanges();
+                Console.WriteLine("Re-created missing admin account");
+            }
+            
+            var scaner = db.Accounts.FirstOrDefault(a => a.Login == "scaner");
+            if (scaner == null)
+            {
+                db.Accounts.Add(new EventManageApp.Models.Scaner { Login = "scaner", Password = "123", Role = "Scaner" });
+                db.SaveChanges();
+                Console.WriteLine("Re-created missing scaner account");
+            }
+        }
     }
     catch (Exception ex)
     {

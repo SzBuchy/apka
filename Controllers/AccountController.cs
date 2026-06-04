@@ -17,10 +17,18 @@ public class AccountController : Controller
         _db = db;
     }
 
-    public IActionResult Login()
+    public async Task<IActionResult> Login()
     {
         if (User.Identity?.IsAuthenticated == true)
         {
+            var login = User.Identity.Name;
+            var account = await _db.Accounts.FirstOrDefaultAsync(a => a.Login == login);
+            
+            if (account != null && (string.IsNullOrEmpty(account.Nickname) || string.IsNullOrEmpty(account.FirstName) || string.IsNullOrEmpty(account.LastName)))
+            {
+                return RedirectToAction("SetNickname");
+            }
+
             return RedirectToUserRole(User.FindFirstValue(ClaimTypes.Role));
         }
         return View();
@@ -37,6 +45,7 @@ public class AccountController : Controller
 
             if (account != null)
             {
+                _logger.LogInformation("Account found for {Login}. Role: {Role}", model.Login, account.Role);
                 var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, account.Login),
@@ -53,6 +62,7 @@ public class AccountController : Controller
                 };
 
                 await HttpContext.SignInAsync("CookieAuth", new ClaimsPrincipal(claimsIdentity), authProperties);
+                _logger.LogInformation("SignInAsync completed for {Login}", model.Login);
 
                 // Store in session for backward compatibility if needed, but claims are better
                 HttpContext.Session.SetString("Username", account.Login);
@@ -61,13 +71,20 @@ public class AccountController : Controller
 
                 if (string.IsNullOrEmpty(account.Nickname) || string.IsNullOrEmpty(account.FirstName) || string.IsNullOrEmpty(account.LastName))
                 {
+                    _logger.LogInformation("Redirecting {Login} to SetNickname", model.Login);
                     return RedirectToAction("SetNickname");
                 }
 
+                _logger.LogInformation("Redirecting {Login} to user role screen", model.Login);
                 return RedirectToUserRole(account.Role);
             }
 
+            _logger.LogWarning("Login failed for user: {Login} - account not found or password incorrect", model.Login);
             TempData["LoginFailed"] = true;
+        }
+        else
+        {
+            _logger.LogWarning("Login model state is invalid for user: {Login}", model.Login);
         }
 
         return View(model);
