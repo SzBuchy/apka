@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - EventManageApp</title>
+    <title>@ViewData["Title"] - Rajd Menedżera 2026</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -14,19 +14,32 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
-            <p class="mb-0 fw-bold">EventManageApp</p>
+                @{
+                    var isAuthenticated = Context.User.Identity?.IsAuthenticated ?? false;
+                    var isAdmin = Context.User.IsInRole("Admin");
+                    var isScaner = Context.User.IsInRole("Scaner");
+                    var nickname = Context.User.FindFirst("Nickname")?.Value ?? Context.User.Identity?.Name;
+
+                    string homeController = "Home";
+                    string homeAction = "Index";
+
+                    if (isAuthenticated)
+                    {
+                        if (isAdmin) { homeController = "Admin"; homeAction = "Index"; }
+                        else if (isScaner) { homeController = "Scaner"; homeAction = "Index"; }
+                        else { homeController = "User"; homeAction = "Index"; }
+                    }
+                }
+                
+                <a class="navbar-brand fw-bold text-primary" asp-area="" asp-controller="@homeController" asp-action="@homeAction">
+                    <i class="bi bi-trophy-fill me-1"></i> Rajd Menedżera 2026
+                </a>
+
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    @{
-                        var isAuthenticated = Context.User.Identity?.IsAuthenticated ?? false;
-                        var isAdmin = Context.User.IsInRole("Admin");
-                        var isScaner = Context.User.IsInRole("Scaner");
-                        var nickname = Context.User.FindFirst("Nickname")?.Value ?? Context.User.Identity?.Name;
-                    }
-                    
                     <ul class="navbar-nav flex-grow-1">
                         @if (isAuthenticated)
                         {
@@ -89,7 +102,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2026 - EventManageApp - Szymon Buchowicz
+            &copy; 2026 - Rajd Menedżera 2026 - Szymon Buchowicz
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
